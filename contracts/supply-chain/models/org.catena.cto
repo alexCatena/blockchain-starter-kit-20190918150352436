@@ -164,6 +164,7 @@ transaction confirmCollectionDate {
 
 abstract participant User identified by UserId {
   o String UserId
+  o String name
 }
 
 participant Customer extends User {
