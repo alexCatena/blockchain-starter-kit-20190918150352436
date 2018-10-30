@@ -24,7 +24,7 @@ Follow the steps below to get started:
 
 In order to use this starter kit, you will need to know how to develop blockchain applications. The IBM Blockchain Platform is built on open source technologies from the Linux Foundation Hyperledger Project, including Hyperledger Fabric and Hyperledger Composer.
 
-You will use these skills later on as part of the starter kit, so don't skip ahead!
+You will use these skills later on as part of the starter kit, so don't skip ahead!aa
 
 ### Hyperledger Fabric
 
