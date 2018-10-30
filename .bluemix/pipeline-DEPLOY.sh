@@ -173,7 +173,7 @@ function deploy_composer_rest_server {
     CF_APP_NAME=composer-rest-server-${BUSINESS_NETWORK_NAME}-catena
     cf push \
         ${CF_APP_NAME} \
-        --docker-image hyperledger/composer-rest-server:0.20.2 \
+        --docker-image sstone/composer-rest-server:0.20.1 \
         -i 1 \
         -m 256M \
         --no-start \
