@@ -146,7 +146,10 @@ describe('#' + namespace, () => {
         const cust = factory.newResource(namespace, participantTypeCust, 'C001')
         const manu = factory.newResource(namespace, participantTypeMan, 'M001')
         const trans = factory.newResource(namespace, participantTypeTrans, 'T001')
-
+        africoil.name = 'test'
+        cust.name = 'test'
+        manu.name = 'test'
+        trans.name = 'test'
         await participantRegistry.addAll([africoil, cust, manu, trans])
 
         // const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNS)
