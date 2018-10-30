@@ -170,7 +170,7 @@ function deploy_composer_rest_server {
     pushd contracts/${CONTRACT}
     BUSINESS_NETWORK_NAME=$(jq --raw-output '.name' package.json)
     BUSINESS_NETWORK_CARD=admin@${BUSINESS_NETWORK_NAME}
-    CF_APP_NAME=composer-rest-server-${BUSINESS_NETWORK_NAME}
+    CF_APP_NAME=composer-rest-server-${BUSINESS_NETWORK_NAME}-catena
     cf push \
         ${CF_APP_NAME} \
         --docker-image ibmblockchain/composer-rest-server:${COMPOSER_VERSION} \
