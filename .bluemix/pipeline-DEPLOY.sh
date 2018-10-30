@@ -173,7 +173,7 @@ function deploy_composer_rest_server {
     CF_APP_NAME=composer-rest-server-${BUSINESS_NETWORK_NAME}-catena
     cf push \
         ${CF_APP_NAME} \
-        --docker-image ibmblockchain/composer-rest-server:${COMPOSER_VERSION} \
+        --docker-image ibmblockchain/composer-rest-server:0.19.5 \
         -i 1 \
         -m 256M \
         --no-start \
