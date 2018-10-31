@@ -149,8 +149,11 @@ async function createUpliftOrder(tx) {
 
     var uplift = factory.newResource(NS, 'UpliftOrder', UOID)
 
-    uplift.collectionDate = tx.collectionDate
+    uplift.pickupTime = tx.pickupTime
+    uplift.mabd = tx.mabd
     uplift.volume = tx.volume
+    uplift.origin = tx.origin
+    uplift.destination = tx.destination
 
     uplift.supplyChainRequest = factory.newRelationship('org.catena','SupplyChainRequest', tx.supplyChainRequest)
     uplift.distributor = factory.newRelationship('org.catena','Distributor',tx.distributor)
@@ -160,6 +163,30 @@ async function createUpliftOrder(tx) {
     return registry.add(uplift)
 }
 
+/**
+ * Add location history
+ * @param {org.catena.addLocationHistory} tx
+ * @transaction
+ */
+async function addLocationHistory (tx) {
+    var NS = 'org.catena.UpliftOrder'
+    var factory = getFactory()
+
+    const registry = await getAssetRegistry(NS)
+
+
+    const location = factory.newConcept('org.catena','Location')
+    location.longitude = tx.longitude
+    location.latitude = tx.latitude
+
+    if(typeof tx.upliftOrder.locationHistory === 'undefined'){
+        tx.upliftOrder.locationHistory = [location]
+    }else{
+        tx.upliftOrder.locationHistory = [...tx.upliftOrder.locationHistory, location]
+    }
+
+    await registry.update(tx.upliftOrder)
+}
 
 /**
  * Add collection order documnet transaction

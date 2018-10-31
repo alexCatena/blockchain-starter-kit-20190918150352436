@@ -210,14 +210,16 @@ describe('#' + namespace, () => {
     async function createUpliftOrder () {
         await createSupplyChainRequest()
         const transaction = factory.newTransaction(namespace, 'createUpliftOrder')
-        transaction.collectionDate = new Date()
+        transaction.pickupTime = new Date()
         transaction.volume = 10000
+        transaction.mabd = new Date()
+        transaction.origin = 'Durban'
+        transaction.destination = 'Cape Town'
 
         transaction.supplyChainRequest = factory.newRelationship('org.catena', 'SupplyChainRequest', '1')
         transaction.distributor = factory.newRelationship('org.catena', 'Distributor','D001')
         transaction.manufacturer = factory.newRelationship('org.catena','Manufacturer','M001')
         transaction.transporter = factory.newRelationship('org.catena', 'Transporter', 'T001')
-        console.log('Finished creating uplift order')
         await businessNetworkConnection.submitTransaction(transaction)
     }
     it('Can create a supply chain request', async () => {
@@ -333,7 +335,7 @@ describe('#' + namespace, () => {
 
     })
 
-    it('Can Create and uplift order', async () => {
+    it('Can Create an uplift order', async () => {
         var NS = 'org.catena'
 
         await useIdentity(africoilCardName)
@@ -351,8 +353,31 @@ describe('#' + namespace, () => {
         fixResourceIdentifier(uplift.distributor.getFullyQualifiedIdentifier()).should.equal(NS +'.Distributor#D001')
         fixResourceIdentifier(uplift.manufacturer.getFullyQualifiedIdentifier()).should.equal(NS +'.Manufacturer#M001')
         fixResourceIdentifier(uplift.transporter.getFullyQualifiedIdentifier()).should.equal(NS+'.Transporter#T001')
+        uplift.origin.should.equal('Durban')
+        uplift.destination.should.equal('Cape Town')
     })
+    it('Can add a location history', async () => {
+        await useIdentity(africoilCardName)
 
+        await createUpliftOrder()
+
+        const transaction = factory.newTransaction(namespace,'addLocationHistory')
+
+        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
+
+        transaction.longitude = 34.22
+        transaction.latitude = 32.22
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
+
+        let assets = await assetRegistry.getAll()
+
+        let up = assets[0]
+
+        up.locationHistory.length.should.equal(1)
+    })
     it('Can add collection order document', async () => {
         await useIdentity(africoilCardName)
 

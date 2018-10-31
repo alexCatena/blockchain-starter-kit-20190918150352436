@@ -95,9 +95,21 @@ transaction addDistributorInvoice {
 
 asset UpliftOrder identified by UOID {
   o String UOID
-  o DateTime collectionDate
+  o DateTime pickupTime
+  o DateTime mabd
+  o DateTime arrivalTime optional
   o Double volume
-  o Boolean collectionDateConfirmed optional
+  o Boolean collectionDateConfirmed default=false
+  o Boolean completed default=false
+  o String origin
+  o String destination
+  o String status default='CREATED'
+  o Location [] locationHistory optional
+
+  --> SupplyChainRequest supplyChainRequest
+  --> Distributor distributor
+  --> Manufacturer manufacturer
+  --> Transporter transporter
 
   //Documents
   o String collectionOrderDocumentUrl optional
@@ -113,21 +125,33 @@ asset UpliftOrder identified by UOID {
   o String transportationInvoiceHash optional
 
 
-  --> SupplyChainRequest supplyChainRequest
-  --> Distributor distributor
-  --> Manufacturer manufacturer
-  --> Transporter transporter
+
+}
+
+concept Location {
+  o Double longitude
+  o Double latitude
 }
 
 transaction createUpliftOrder {
-  o DateTime collectionDate
+
+  o DateTime pickupTime
   o Double volume
+  o DateTime mabd
+  o String origin
+  o String destination
 
   --> SupplyChainRequest supplyChainRequest
   --> Distributor distributor
   --> Manufacturer manufacturer
   --> Transporter transporter
 
+}
+
+transaction addLocationHistory {
+  --> UpliftOrder upliftOrder
+  o Double longitude
+  o Double latitude
 }
 
 transaction addCollectionOrderDocument {
