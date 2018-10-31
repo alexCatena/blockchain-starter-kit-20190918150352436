@@ -61,12 +61,11 @@ function deploy_composer_contract {
             elif [[ "${OUTPUT}" = *"premature execution"* ]]
             then
                 sleep 30
-            elif [[ "${OUTPUT}" = *"chaincode exists"* ]]
+            elif [[ "${OUTPUT}" = *"already exists"* ]]
             then
                 BUSINESS_NETWORK_UPGRADE=true
                 break
             else
-                echo ${OUTPUT}
                 echo failed to start composer contract ${CONTRACT}
                 exit 1
             fi
