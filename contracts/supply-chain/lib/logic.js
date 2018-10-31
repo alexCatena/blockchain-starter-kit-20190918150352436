@@ -61,8 +61,8 @@ async function createSupplyChainRequest (tx) {
     scr.cost = tx.cost
     scr.deliveryDate = tx.deliveryDate
 
-    scr.customer = factory.newRelationship('org.catena','Customer',tx.customer)
-    scr.distributor = factory.newRelationship('org.catena', 'Distributor', tx.distributor)
+    scr.customer = tx.customer
+    scr.distributor = tx.distributor
     return registry.add(scr)
 }
 
@@ -155,10 +155,10 @@ async function createUpliftOrder(tx) {
     uplift.origin = tx.origin
     uplift.destination = tx.destination
 
-    uplift.supplyChainRequest = factory.newRelationship('org.catena','SupplyChainRequest', tx.supplyChainRequest)
-    uplift.distributor = factory.newRelationship('org.catena','Distributor',tx.distributor)
-    uplift.manufacturer = factory.newRelationship('org.catena','Manufacturer', tx.manufacturer)
-    uplift.transporter = factory.newRelationship('org.catena','Transporter',tx.transporter)
+    uplift.supplyChainRequest = tx.supplyChainRequest
+    uplift.distributor = tx.distributor
+    uplift.manufacturer = tx.manufacturer
+    uplift.transporter = tx.transporter
 
     return registry.add(uplift)
 }

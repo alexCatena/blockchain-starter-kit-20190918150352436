@@ -223,6 +223,7 @@ describe('#' + namespace, () => {
         await businessNetworkConnection.submitTransaction(transaction)
     }
     it('Can create a supply chain request', async () => {
+        var NS = 'org.catena'
         await useIdentity(africoilCardName)
 
         const transaction = factory.newTransaction(namespace, 'createSupplyChainRequest')
@@ -242,6 +243,8 @@ describe('#' + namespace, () => {
 
         scr.fuelAmount.should.equal(8000)
         scr.cost.should.equal(15000)
+        scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
+        scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
     })
 
     it('Can confirm supply', async () => {
@@ -349,10 +352,10 @@ describe('#' + namespace, () => {
         let uplift = assets[0]
 
         uplift.volume.should.equal(10000)
-        fixResourceIdentifier(uplift.supplyChainRequest.getFullyQualifiedIdentifier()).should.equal(NS + '.SupplyChainRequest#1')
-        fixResourceIdentifier(uplift.distributor.getFullyQualifiedIdentifier()).should.equal(NS +'.Distributor#D001')
-        fixResourceIdentifier(uplift.manufacturer.getFullyQualifiedIdentifier()).should.equal(NS +'.Manufacturer#M001')
-        fixResourceIdentifier(uplift.transporter.getFullyQualifiedIdentifier()).should.equal(NS+'.Transporter#T001')
+        uplift.supplyChainRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyChainRequest#1')
+        uplift.distributor.getFullyQualifiedIdentifier().should.equal(NS +'.Distributor#D001')
+        uplift.manufacturer.getFullyQualifiedIdentifier().should.equal(NS +'.Manufacturer#M001')
+        uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS+'.Transporter#T001')
         uplift.origin.should.equal('Durban')
         uplift.destination.should.equal('Cape Town')
     })
