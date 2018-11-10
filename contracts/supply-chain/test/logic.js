@@ -190,19 +190,48 @@ describe('#' + namespace, () => {
         const transaction = factory.newTransaction(namespace, 'createSupplyChainRequest')
         transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
         transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
-        transaction.fuelAmount = 8000
+        transaction.volume = 8000
         transaction.cost = 15000
+        transaction.fuelType = 'Petrol'
         transaction.deliveryDate = new Date()
+        transaction.requestDate = new Date()
+        transaction.deliveryLocation = 'Durban'
+        transaction.deliveryMethod = 'FREIGHT'
 
         await businessNetworkConnection.submitTransaction(transaction)
     }
     /**
-     *  Returns the identifier when the id is part of a relationship
-     * @param {String} id
+     * Function to create a supply agreement
      */
-    function fixResourceIdentifier(id){
-        var n = id.indexOf('=')
-        return id.substring(n+1,id.length-1)
+    async function createSupplyAgreement(){
+        const transaction = factory.newTransaction(namespace, 'createSupplyAgreement')
+        transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
+        transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
+        transaction.comencementDate = new Date()
+        transaction.expiryDate = new Date()
+        transaction.volume = 8000000
+
+        let trac = factory.newConcept(namespace, 'Site')
+        trac.site = 'Belville'
+        trac.division = 'Transnet Rail Freight'
+        trac.zone = '01A'
+        transaction.tractionSites = [trac]
+
+        let home = factory.newConcept(namespace, 'Site')
+        home.site = 'Straddle Carriers'
+        home.division = 'Transnet Port Terminals'
+        home.zone = '01A'
+
+        transaction.homebaseSites = [home]
+
+        let rebate = factory.newConcept(namespace, 'Rebate')
+        rebate.rebate = 29
+        rebate.volumeRange = '10 - 16'
+        rebate.discipline = 'Home Base'
+
+        transaction.rebateTable = [rebate]
+
+        await businessNetworkConnection.submitTransaction(transaction)
     }
     /**
      * Function to be reused to create uplift order
@@ -215,6 +244,8 @@ describe('#' + namespace, () => {
         transaction.mabd = new Date()
         transaction.origin = 'Durban'
         transaction.destination = 'Cape Town'
+        transaction.deliveryMethod = 'FREIGHT'
+        transaction.fuelType = 'Petrol'
 
         transaction.supplyChainRequest = factory.newRelationship('org.catena', 'SupplyChainRequest', '1')
         transaction.distributor = factory.newRelationship('org.catena', 'Distributor','D001')
@@ -222,18 +253,31 @@ describe('#' + namespace, () => {
         transaction.transporter = factory.newRelationship('org.catena', 'Transporter', 'T001')
         await businessNetworkConnection.submitTransaction(transaction)
     }
+
+    it('Can create a Supply Agreement', async () => {
+        var NS = 'org.catena'
+        await useIdentity(africoilCardName)
+
+        await createSupplyAgreement()
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.catena.SupplyAgreement')
+        let assets = await assetRegistry.getAll()
+
+        let scr = assets[0]
+
+        scr.volume.should.equal(8000000)
+        scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
+        scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
+        scr.tractionSites.length.should.equal(1)
+        scr.homebaseSites.length.should.equal(1)
+        scr. rebateTable.length.should.equal(1)
+
+    })
     it('Can create a supply chain request', async () => {
         var NS = 'org.catena'
         await useIdentity(africoilCardName)
 
-        const transaction = factory.newTransaction(namespace, 'createSupplyChainRequest')
-        transaction.customer = factory.newRelationship(namespace, 'Customer','C001')
-        transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
-        transaction.fuelAmount = 8000
-        transaction.cost = 15000
-        transaction.deliveryDate = new Date()
-
-        await businessNetworkConnection.submitTransaction(transaction)
+        await createSupplyChainRequest()
 
         const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNS)
 
@@ -241,12 +285,27 @@ describe('#' + namespace, () => {
 
         let scr = assets[0]
 
-        scr.fuelAmount.should.equal(8000)
+        scr.volume.should.equal(8000)
         scr.cost.should.equal(15000)
         scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
         scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
     })
+    it('Can add supply chain request to supply agreement', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyChainRequest()
+        await createSupplyAgreement()
 
+        const transaction = factory.newTransaction('org.catena', 'addSupplyChainRequest')
+        transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement','1')
+        transaction.supplyChainRequest = factory.newRelationship('org.catena', 'SupplyChainRequest', '1')
+        await businessNetworkConnection.submitTransaction(transaction)
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace +'.SupplyAgreement')
+
+        const assets = await assetRegistry.getAll()
+
+        let sa = assets[0]
+        sa.supplyChainRequests.length.should.equal(1)
+    })
     it('Can confirm supply', async () => {
         await useIdentity(africoilCardName)
 
@@ -358,6 +417,8 @@ describe('#' + namespace, () => {
         uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS+'.Transporter#T001')
         uplift.origin.should.equal('Durban')
         uplift.destination.should.equal('Cape Town')
+        uplift.deliveryMethod.should.equal('FREIGHT')
+        uplift.fuelType.should.equal('Petrol')
     })
     it('Can add a location history', async () => {
         await useIdentity(africoilCardName)

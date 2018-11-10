@@ -57,12 +57,16 @@ async function createSupplyChainRequest (tx) {
 
     var scr = factory.newResource(NS, 'SupplyChainRequest', SCRID)
 
-    scr.fuelAmount = tx.fuelAmount
+    scr.volume = tx.volume
+    scr.fuelType = tx.fuelType
     scr.cost = tx.cost
     scr.deliveryDate = tx.deliveryDate
-
+    scr.requestDate = tx.requestDate
     scr.customer = tx.customer
     scr.distributor = tx.distributor
+    scr.deliveryLocation = tx.deliveryLocation
+    scr.deliveryMethod = tx.deliveryMethod
+    scr.requestDate = tx.requestDate
     return registry.add(scr)
 }
 
@@ -154,6 +158,8 @@ async function createUpliftOrder(tx) {
     uplift.volume = tx.volume
     uplift.origin = tx.origin
     uplift.destination = tx.destination
+    uplift.deliveryMethod = tx.deliveryMethod
+    uplift.fuelType = tx.fuelType
 
     uplift.supplyChainRequest = tx.supplyChainRequest
     uplift.distributor = tx.distributor
@@ -270,4 +276,46 @@ async function confirmCollectionDate(tx) {
 
     await registry.update(tx.upliftOrder)
 
+}
+
+/**
+ * Create Supply Agreement transaction
+ * @param {org.catena.createSupplyAgreement} tx
+ * @transaction
+ */
+async function createSupplyAgreement(tx) {
+    const registry = await getAssetRegistry('org.catena.SupplyAgreement')
+    var assets = await registry.getAll()
+    var factory = getFactory()
+
+    var NS = 'org.catena'
+    var SAID = (assets.length + 1).toString()
+
+    var scr = factory.newResource(NS, 'SupplyAgreement', SAID)
+
+    scr.volume = tx.volume
+    scr.comencementDate = tx.comencementDate
+    scr.expiryDate = tx.expiryDate
+    scr.customer = tx.customer
+    scr.distributor = tx.distributor
+    scr.tractionSites = tx.tractionSites
+    scr.homebaseSites = tx.homebaseSites
+    scr.rebateTable = tx.rebateTable
+    return registry.add(scr)
+}
+
+/**
+ * add supply chain request transaction
+ * @param {org.catena.addSupplyChainRequest} tx
+ * @transaction
+ */
+async function addSupplyChainRequest (tx) {
+    const registry = await getAssetRegistry('org.catena.SupplyAgreement')
+
+    if(typeof tx.supplyAgreement.supplyChainRequests === 'undefined'){
+        tx.supplyAgreement.supplyChainRequests = [tx.supplyChainRequest]
+    }else{
+        tx.supplyAgreement.supplyChainRequests = [...tx.supplyAgreement.supplyChainRequests, tx.supplyChainRequest]
+    }
+    registry.update(tx.supplyAgreement)
 }

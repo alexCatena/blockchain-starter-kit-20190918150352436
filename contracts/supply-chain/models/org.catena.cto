@@ -41,13 +41,57 @@ event SampleEvent {
   o String newValue
 }
 
+asset SupplyAgreement identified by SAID {
+  o String SAID
+  o DateTime comencementDate
+  o DateTime expiryDate
+  o Site [] tractionSites
+  o Site [] homebaseSites
+  o Rebate [] rebateTable
+  o Double volume
+  o SupplyChainRequest [] supplyChainRequests optional 
 
+  --> Customer customer
+  --> Distributor distributor
+}
+
+transaction createSupplyAgreement {
+  o DateTime comencementDate
+  o DateTime expiryDate
+  o Site [] tractionSites
+  o Site [] homebaseSites
+  o Rebate [] rebateTable
+  o Double volume
+  --> Customer customer
+  --> Distributor distributor
+}
+
+transaction addSupplyChainRequest {
+  --> SupplyAgreement supplyAgreement
+  --> SupplyChainRequest supplyChainRequest
+}
+
+concept Site {
+  o String site
+  o String division
+  o String zone
+}
+
+concept Rebate {
+  o Double rebate
+  o String volumeRange
+  o String discipline
+}
 asset SupplyChainRequest identified by SRCID {
   o String SRCID
-  o Double fuelAmount
+  o Double volume 
   o Double cost
   o DateTime deliveryDate
   o Boolean supplyConfirmed default=false
+  o String fuelType
+  o DateTime requestDate
+  o String deliveryLocation
+  o DeliveryMethod deliveryMethod
 
   //Documents
   o String supplyRequestRecordUrl optional
@@ -63,10 +107,19 @@ asset SupplyChainRequest identified by SRCID {
   --> Distributor distributor
 }
 
+enum DeliveryMethod {
+  o FREIGHT
+  o RAIL
+}
+
 transaction createSupplyChainRequest {
-  o Double fuelAmount
   o Double cost
   o DateTime deliveryDate
+  o DateTime requestDate
+  o Double volume
+  o String deliveryLocation
+  o DeliveryMethod deliveryMethod
+  o String fuelType
 
   --> Customer customer
   --> Distributor distributor
@@ -105,6 +158,8 @@ asset UpliftOrder identified by UOID {
   o String destination
   o String status default='CREATED'
   o Location [] locationHistory optional
+  o DeliveryMethod deliveryMethod
+  o String fuelType
 
   --> SupplyChainRequest supplyChainRequest
   --> Distributor distributor
@@ -140,6 +195,8 @@ transaction createUpliftOrder {
   o DateTime mabd
   o String origin
   o String destination
+  o DeliveryMethod deliveryMethod
+  o String fuelType
 
   --> SupplyChainRequest supplyChainRequest
   --> Distributor distributor
