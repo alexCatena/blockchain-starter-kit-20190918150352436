@@ -27,6 +27,7 @@ function provision_blockchain {
 
 function get_blockchain_connection_profile_inner {
     do_curl \
+        -k \
         -H 'Content-Type: application/json' \
         -H 'Accept: application/json' \
         -u ${BLOCKCHAIN_KEY}:${BLOCKCHAIN_SECRET} \
