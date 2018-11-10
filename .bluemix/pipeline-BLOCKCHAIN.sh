@@ -58,6 +58,7 @@ function wait_for_peer_to_start {
 function start_blockchain_peer {
     PEER=$1
     do_curl \
+        -k \
         -X POST \
         -H 'Accept: application/json' \
         -u ${BLOCKCHAIN_KEY}:${BLOCKCHAIN_SECRET} \
@@ -79,6 +80,7 @@ function wait_for_peer_to_stop {
 function stop_blockchain_peer {
     PEER=$1
     do_curl \
+        -k \
         -X POST \
         -H 'Accept: application/json' \
         -u ${BLOCKCHAIN_KEY}:${BLOCKCHAIN_SECRET} \
