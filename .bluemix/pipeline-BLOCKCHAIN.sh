@@ -110,6 +110,7 @@ function upload_admin_cert {
 }
 EOF
     do_curl \
+        -k \
         -X POST \
         -H 'Content-Type: application/json' \
         -H 'Accept: application/json' \
@@ -122,6 +123,7 @@ EOF
 function sync_channel_certs {
     CHANNEL=$1
     do_curl \
+        -k \
         -X POST \
         -H 'Accept: application/json' \
         -u ${BLOCKCHAIN_KEY}:${BLOCKCHAIN_SECRET} \
@@ -163,6 +165,7 @@ function update_blockchain_deploy_status {
 }
 EOF
     do_curl \
+        -k \
         -X PUT \
         -H 'Content-Type: application/json' \
         -u ${BLOCKCHAIN_KEY}:${BLOCKCHAIN_SECRET} \
