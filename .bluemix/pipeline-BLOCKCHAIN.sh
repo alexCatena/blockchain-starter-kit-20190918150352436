@@ -38,6 +38,7 @@ function get_blockchain_connection_profile {
     while ! jq -e ".channels.defaultchannel" blockchain-connection-profile.json
     do
         sleep 10
+        echo 'In get connection profile loop'
         get_blockchain_connection_profile_inner
     done
 }
