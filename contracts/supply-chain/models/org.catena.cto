@@ -60,7 +60,7 @@ transaction createSupplyAgreement {
   o DateTime expiryDate
   o Site [] tractionSites
   o Site [] homebaseSites
-  o Rebate [] rebateTable
+  o Rebate [] rebateTables
   o Double volume
   --> Customer customer
   --> Distributor distributor
