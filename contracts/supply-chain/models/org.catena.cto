@@ -46,8 +46,11 @@ asset SupplyAgreement identified by SAID {
   o DateTime effectiveDate
   o DateTime expiryDate
   o DateTime priceSetDate
+  o DateTime requestDatePrior
   o String priceStructure
   o Double annualBaseQuantity
+  o String qualitySpecification
+  o Integer supplyFailTime
   o WholesaleListPrice [] wholesaleListPriceTable
   o Site [] sitesTable
   o Rebate [] rebateTable 
@@ -61,8 +64,11 @@ transaction createSupplyAgreement {
   o DateTime effectiveDate
   o DateTime expiryDate
   o DateTime priceSetDate
+  o DateTime requestDatePrior
   o String priceStructure
   o Double annualBaseQuantity
+  o String qualitySpecification
+  o Integer supplyFailTime
   o WholesaleListPrice [] wholesaleListPriceTable
   o Site [] sitesTable
   o Rebate [] rebateTable
@@ -101,6 +107,7 @@ asset SupplyRequest identified by SRID {
   o String SRID
   o DateTime requestDate
   o String fuelType
+  o String qualitySpecification
   o Double volume 
   o DateTime deliveryDate
   o String deliveryLocation
@@ -116,6 +123,9 @@ asset SupplyRequest identified by SRID {
   o String distributorInvoiceUrl optional
   o String distributorInvoiceHash optional
 
+  o String meterSlipUrl optional
+  o String meterSlipHash optional
+
   --> Customer customer
   --> Distributor distributor
 }
@@ -123,6 +133,7 @@ asset SupplyRequest identified by SRID {
 transaction createSupplyRequest {
   o DateTime requestDate
   o String fuelType
+  o String qualitySpecification
   o Double volume 
   o DateTime deliveryDate
   o String deliveryLocation
@@ -152,19 +163,27 @@ transaction addDistributorInvoice {
   o String distributorInvoiceUrl
 }
 
+transaction addMeterSlip {
+  --> SupplyRequest scr
+  o String meterSlipHash
+  o String meterSlipUrl
+}
+
 asset UpliftOrder identified by UOID {
   o String UOID
   o DateTime pickupTime
   o DateTime mabd
   o DateTime arrivalTime optional
   o Double volume
+  o String fuelType
+  o String qualitySpecification
   o Boolean collectionDateConfirmed default=false
   o Boolean completed default=false
   o String origin
   o String destination
   o String status default='CREATED'
   o Location [] locationHistory optional
-  o String fuelType
+  o String transportCompany 
 
   --> SupplyRequest SupplyRequest
   --> Distributor distributor
@@ -198,6 +217,7 @@ transaction createUpliftOrder {
   o String origin
   o String destination
   o String fuelType
+  o String qualitySpecification
 
   --> SupplyRequest SupplyRequest
   --> Distributor distributor
