@@ -43,55 +43,68 @@ event SampleEvent {
 
 asset SupplyAgreement identified by SAID {
   o String SAID
-  o DateTime comencementDate
+  o DateTime effectiveDate
   o DateTime expiryDate
-  o Site [] tractionSites
-  o Site [] homebaseSites
-  o Rebate [] rebateTable
-  o Double volume
-  o SupplyChainRequest [] supplyChainRequests optional 
+  o DateTime priceSetDate
+  o String priceStructure
+  o Double annualBaseQuantity
+  o WholesaleListPrice [] wholesaleListPriceTable
+  o Site [] sitesTable
+  o Rebate [] rebateTable 
+  o SupplyRequest [] SupplyRequests optional 
 
   --> Customer customer
   --> Distributor distributor
 }
 
 transaction createSupplyAgreement {
-  o DateTime comencementDate
+  o DateTime effectiveDate
   o DateTime expiryDate
-  o Site [] tractionSites
-  o Site [] homebaseSites
-  o Rebate [] rebateTables
-  o Double volume
+  o DateTime priceSetDate
+  o String priceStructure
+  o Double annualBaseQuantity
+  o WholesaleListPrice [] wholesaleListPriceTable
+  o Site [] sitesTable
+  o Rebate [] rebateTable
+
   --> Customer customer
   --> Distributor distributor
 }
 
-transaction addSupplyChainRequest {
+transaction addSupplyRequest {
   --> SupplyAgreement supplyAgreement
-  --> SupplyChainRequest supplyChainRequest
+  --> SupplyRequest SupplyRequest
 }
 
 concept Site {
   o String site
   o String division
   o String zone
+  o String siteType
 }
 
 concept Rebate {
   o Double rebate
-  o String volumeRange
-  o String discipline
+  o String siteType
 }
-asset SupplyChainRequest identified by SRCID {
-  o String SRCID
-  o Double volume 
-  o Double cost
-  o DateTime deliveryDate
-  o Boolean supplyConfirmed default=false
+
+concept WholesaleListPrice {
+  o DateTime postedDate
   o String fuelType
+  o String zone
+  o Double basicListPrice
+  o Double zoneDifferential
+  o Double wholesaleListPrice
+}
+
+asset SupplyRequest identified by SRID {
+  o String SRID
   o DateTime requestDate
+  o String fuelType
+  o Double volume 
+  o DateTime deliveryDate
   o String deliveryLocation
-  o DeliveryMethod deliveryMethod
+  o Boolean supplyConfirmed default=false
 
   //Documents
   o String supplyRequestRecordUrl optional
@@ -107,41 +120,34 @@ asset SupplyChainRequest identified by SRCID {
   --> Distributor distributor
 }
 
-enum DeliveryMethod {
-  o FREIGHT
-  o RAIL
-}
-
-transaction createSupplyChainRequest {
-  o Double cost
-  o DateTime deliveryDate
+transaction createSupplyRequest {
   o DateTime requestDate
-  o Double volume
-  o String deliveryLocation
-  o DeliveryMethod deliveryMethod
   o String fuelType
+  o Double volume 
+  o DateTime deliveryDate
+  o String deliveryLocation
 
   --> Customer customer
   --> Distributor distributor
 }
 transaction confirmSupply {
-  --> SupplyChainRequest scr
+  --> SupplyRequest scr
 }
 
 transaction addSupplyRequestRecord {
-  --> SupplyChainRequest scr
+  --> SupplyRequest scr
   o String supplyRequestRecordHash
   o String supplyRequestRecordUrl
 }
 
 transaction addPurchaseOrder {
-  --> SupplyChainRequest scr
+  --> SupplyRequest scr
   o String purchaseOrderUrl
   o String purchaseOrderHash
 }
 
 transaction addDistributorInvoice {
-  --> SupplyChainRequest scr
+  --> SupplyRequest scr
   o String distributorInvoiceHash
   o String distributorInvoiceUrl
 }
@@ -158,10 +164,9 @@ asset UpliftOrder identified by UOID {
   o String destination
   o String status default='CREATED'
   o Location [] locationHistory optional
-  o DeliveryMethod deliveryMethod
   o String fuelType
 
-  --> SupplyChainRequest supplyChainRequest
+  --> SupplyRequest SupplyRequest
   --> Distributor distributor
   --> Manufacturer manufacturer
   --> Transporter transporter
@@ -178,9 +183,6 @@ asset UpliftOrder identified by UOID {
 
   o String transportationInvoiceUrl optional
   o String transportationInvoiceHash optional
-
-
-
 }
 
 concept Location {
@@ -195,10 +197,9 @@ transaction createUpliftOrder {
   o DateTime mabd
   o String origin
   o String destination
-  o DeliveryMethod deliveryMethod
   o String fuelType
 
-  --> SupplyChainRequest supplyChainRequest
+  --> SupplyRequest SupplyRequest
   --> Distributor distributor
   --> Manufacturer manufacturer
   --> Transporter transporter
