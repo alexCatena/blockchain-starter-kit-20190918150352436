@@ -22,52 +22,50 @@
  * @param {org.catena.SampleTransaction} sampleTransaction
  * @transaction
  */
-async function sampleTransaction(tx) {
-    // Save the old value of the asset.
-    const oldValue = tx.asset.value
+// async function sampleTransaction(tx) {
+//     // Save the old value of the asset.
+//     const oldValue = tx.asset.value
 
-    // Update the asset with the new value.
-    tx.asset.value = tx.newValue
+//     // Update the asset with the new value.
+//     tx.asset.value = tx.newValue
 
-    // Get the asset registry for the asset.
-    const assetRegistry = await getAssetRegistry('org.catena.SampleAsset')
-    // Update the asset in the asset registry.
-    await assetRegistry.update(tx.asset)
+//     // Get the asset registry for the asset.
+//     const assetRegistry = await getAssetRegistry('org.catena.SampleAsset')
+//     // Update the asset in the asset registry.
+//     await assetRegistry.update(tx.asset)
 
-    // Emit an event for the modified asset.
-    let event = getFactory().newEvent('org.catena', 'SampleEvent')
-    event.asset = tx.asset
-    event.oldValue = oldValue
-    event.newValue = tx.newValue
-    emit(event)
-}
+//     // Emit an event for the modified asset.
+//     let event = getFactory().newEvent('org.catena', 'SampleEvent')
+//     event.asset = tx.asset
+//     event.oldValue = oldValue
+//     event.newValue = tx.newValue
+//     emit(event)
+// }
 
 /**
  * Create Supply Chain request transaction
- * @param {org.catena.createSupplyChainRequest} tx
+ * @param {org.catena.createSupplyRequest} tx
  * @transaction
  */
-async function createSupplyChainRequest (tx) {
-    const registry = await getAssetRegistry('org.catena.SupplyChainRequest')
+async function createSupplyRequest (tx) {
+    const registry = await getAssetRegistry('org.catena.SupplyRequest')
     var assets = await registry.getAll()
     var factory = getFactory()
 
     var NS = 'org.catena'
-    var SCRID = (assets.length + 1).toString()
+    var SRID = (assets.length + 1).toString()
 
-    var scr = factory.newResource(NS, 'SupplyChainRequest', SCRID)
+    var sr = factory.newResource(NS, 'SupplyRequest', SRID)
 
-    scr.volume = tx.volume
-    scr.fuelType = tx.fuelType
-    scr.cost = tx.cost
-    scr.deliveryDate = tx.deliveryDate
-    scr.requestDate = tx.requestDate
-    scr.customer = tx.customer
-    scr.distributor = tx.distributor
-    scr.deliveryLocation = tx.deliveryLocation
-    scr.deliveryMethod = tx.deliveryMethod
-    scr.requestDate = tx.requestDate
-    return registry.add(scr)
+    sr.requestDate = tx.requestDate
+    sr.fuelType = tx.fuelType
+    sr.qualitySpecification = tx.qualitySpecification
+    sr.volume = tx.volume
+    sr.deliveryDate = tx.deliveryDate
+    sr.deliveryLocation = tx.deliveryLocation
+    sr.customer = tx.customer
+    sr.distributor = tx.distributor
+    return registry.add(sr)
 }
 
 
@@ -77,7 +75,7 @@ async function createSupplyChainRequest (tx) {
   * @transaction
   */
 async function confirmSupply(tx) {
-    var NS = 'org.catena.SupplyChainRequest'
+    var NS = 'org.catena.SupplyRequest'
 
     const registry = await getAssetRegistry(NS)
 
@@ -93,7 +91,7 @@ async function confirmSupply(tx) {
    * @transaction
    */
 async function addSupplyRequestRecord(tx) {
-    var NS = 'org.catena.SupplyChainRequest'
+    var NS = 'org.catena.SupplyRequest'
 
     const registry = await getAssetRegistry(NS)
 
@@ -110,7 +108,7 @@ async function addSupplyRequestRecord(tx) {
  * @transaction
  */
 async function addPurchaseOrder(tx) {
-    var NS = 'org.catena.SupplyChainRequest'
+    var NS = 'org.catena.SupplyRequest'
 
     const registry = await getAssetRegistry(NS)
 
@@ -125,7 +123,7 @@ async function addPurchaseOrder(tx) {
  * @transaction
  */
 async function addDistributorInvoice(tx) {
-    var NS = 'org.catena.SupplyChainRequest'
+    var NS = 'org.catena.SupplyRequest'
 
     const registry = await getAssetRegistry(NS)
 
@@ -158,10 +156,11 @@ async function createUpliftOrder(tx) {
     uplift.volume = tx.volume
     uplift.origin = tx.origin
     uplift.destination = tx.destination
-    uplift.deliveryMethod = tx.deliveryMethod
+    uplift.qualitySpecification = tx.qualitySpecification
     uplift.fuelType = tx.fuelType
+    uplift.transportCompany = tx.transportCompany
 
-    uplift.supplyChainRequest = tx.supplyChainRequest
+    uplift.SupplyRequest = tx.SupplyRequest
     uplift.distributor = tx.distributor
     uplift.manufacturer = tx.manufacturer
     uplift.transporter = tx.transporter
@@ -291,31 +290,49 @@ async function createSupplyAgreement(tx) {
     var NS = 'org.catena'
     var SAID = (assets.length + 1).toString()
 
-    var scr = factory.newResource(NS, 'SupplyAgreement', SAID)
+    var sa = factory.newResource(NS, 'SupplyAgreement', SAID)
 
-    scr.volume = tx.volume
-    scr.comencementDate = tx.comencementDate
-    scr.expiryDate = tx.expiryDate
-    scr.customer = tx.customer
-    scr.distributor = tx.distributor
-    scr.tractionSites = tx.tractionSites
-    scr.homebaseSites = tx.homebaseSites
-    scr.rebateTable = tx.rebateTable
-    return registry.add(scr)
+    sa.effectiveDate = tx.effectiveDate
+    sa.expiryDate = tx.expiryDate
+    sa.priceSetDate = tx.priceSetDate
+    sa.requestDatePrior = tx.requestDatePrior
+    sa.priceStructure = tx.priceStructure
+    sa.annualBaseQuantity = tx.annualBaseQuantity
+    sa.qualitySpecification = tx.qualitySpecification
+    sa.supplyFailTime = tx.supplyFailTime
+    sa.wholesaleListPriceTable = tx.wholesaleListPriceTable
+    sa.sitesTable = tx.sitesTable
+    sa.rebateTable = tx.rebateTable
+
+    sa.customer = tx.customer
+    sa.distributor = tx.distributor
+    return registry.add(sa)
 }
 
 /**
  * add supply chain request transaction
- * @param {org.catena.addSupplyChainRequest} tx
+ * @param {org.catena.addSupplyRequest} tx
  * @transaction
  */
-async function addSupplyChainRequest (tx) {
+async function addSupplyRequest (tx) {
     const registry = await getAssetRegistry('org.catena.SupplyAgreement')
 
-    if(typeof tx.supplyAgreement.supplyChainRequests === 'undefined'){
-        tx.supplyAgreement.supplyChainRequests = [tx.supplyChainRequest]
+    if(typeof tx.supplyAgreement.SupplyRequests === 'undefined'){
+        tx.supplyAgreement.SupplyRequests = [tx.SupplyRequest]
     }else{
-        tx.supplyAgreement.supplyChainRequests = [...tx.supplyAgreement.supplyChainRequests, tx.supplyChainRequest]
+        tx.supplyAgreement.SupplyRequests = [...tx.supplyAgreement.SupplyRequests, tx.SupplyRequest]
     }
     registry.update(tx.supplyAgreement)
+}
+/**
+ * add cicero contract Id to the supply agreement
+ * @param {org.catena.addCiceroContract} tx
+ * @transaction
+ */
+async function addCiceroContract (tx){
+    const registry = await getAssetRegistry('org.catena.SupplyAgreement')
+
+    tx.supplyAgreement.ciceroContractId = tx.ciceroContractId
+
+    return registry.update(tx.supplyAgreement)
 }
