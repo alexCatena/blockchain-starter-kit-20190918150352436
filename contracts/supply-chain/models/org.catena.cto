@@ -33,7 +33,7 @@ asset SupplyAgreement identified by SAID {
   o Rebate [] rebateTable 
   o SupplyRequest [] SupplyRequests optional 
   o String ciceroContractId optional
-
+  o SupplyAgreementState agreementState default='DRAFT'
   --> Customer customer
   --> Distributor distributor
 }
@@ -50,9 +50,20 @@ transaction createSupplyAgreement {
   o WholesaleListPrice [] wholesaleListPriceTable
   o Site [] sitesTable
   o Rebate [] rebateTable
-
   --> Customer customer
   --> Distributor distributor
+}
+
+enum SupplyAgreementState {
+  o DRAFT
+  o ACTIVE
+  o EXPIRED
+  o CANCELD
+}
+
+event SupplyAgreementCreated {
+  o String SAID
+  o String Customer
 }
 
 transaction addSupplyRequest {
@@ -60,11 +71,19 @@ transaction addSupplyRequest {
   --> SupplyRequest SupplyRequest
 }
 
+event SupplyRequestAdded{
+  o String SAID
+  o String SRID
+}
+
 transaction addCiceroContract {
   --> SupplyAgreement supplyAgreement
   o String ciceroContractId
 }
 
+event CiceroContractAdded {
+  o String SAID
+}
 concept Site {
   o String site
   o String division
@@ -95,6 +114,7 @@ asset SupplyRequest identified by SRID {
   o DateTime deliveryDate
   o String deliveryLocation
   o Boolean supplyConfirmed default=false
+  o SupplyRequestState requestState default='CREATED'
 
   //Documents
   o String supplyRequestRecordUrl optional
@@ -123,6 +143,15 @@ transaction createSupplyRequest {
 
   --> Customer customer
   --> Distributor distributor
+}
+enum SupplyRequestState {
+  o CREATED
+  o CONFIRMED
+  o COMPLETED
+  o FAILED
+}
+event SupplyRequestCreated {
+  o String SRID
 }
 transaction confirmSupply {
   --> SupplyRequest scr

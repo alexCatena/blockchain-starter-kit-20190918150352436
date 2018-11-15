@@ -65,7 +65,12 @@ async function createSupplyRequest (tx) {
     sr.deliveryLocation = tx.deliveryLocation
     sr.customer = tx.customer
     sr.distributor = tx.distributor
-    return registry.add(sr)
+    await registry.add(sr)
+
+    let event = factory.newEvent('org.catena', 'SupplyRequestCreated')
+    event.SRID = SRID
+
+    emit(event)
 }
 
 
@@ -306,7 +311,14 @@ async function createSupplyAgreement(tx) {
 
     sa.customer = tx.customer
     sa.distributor = tx.distributor
-    return registry.add(sa)
+    await registry.add(sa)
+
+    let event = factory.newEvent('org.catena','SupplyAgreementCreated')
+
+    event.SAID = SAID
+    event.Customer = tx.customer
+
+    emit(event)
 }
 
 /**
@@ -322,7 +334,14 @@ async function addSupplyRequest (tx) {
     }else{
         tx.supplyAgreement.SupplyRequests = [...tx.supplyAgreement.SupplyRequests, tx.SupplyRequest]
     }
-    registry.update(tx.supplyAgreement)
+    await registry.update(tx.supplyAgreement)
+
+    let event = getFactory().newEvent('org.catena','SupplyRequestAdded')
+
+    event.SAID= tx.supplyAgreement.SAID
+    event.SRID = tx.SupplyRequest.SRID
+
+    emit(event)
 }
 /**
  * add cicero contract Id to the supply agreement
