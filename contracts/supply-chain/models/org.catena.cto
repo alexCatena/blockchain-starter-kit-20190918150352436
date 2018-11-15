@@ -23,15 +23,19 @@ asset SupplyAgreement identified by SAID {
   o DateTime effectiveDate
   o DateTime expiryDate
   o DateTime priceSetDate
-  o DateTime requestDatePrior
-  o String priceStructure
-  o Double annualBaseQuantity
-  o String qualitySpecification
+  o Integer requestDatePrior
   o Integer supplyFailTime
-  o WholesaleListPrice [] wholesaleListPriceTable
-  o Site [] sitesTable
-  o Rebate [] rebateTable 
-  o SupplyRequest [] SupplyRequests optional 
+  o Integer annualBaseQuantity
+  o Double penaltyPercentage
+  o Double capPercentage
+  o Site[] siteTable
+  o String qualitySpecification 
+
+  o String priceStructure optional
+  o WholesaleListPrice [] wholesaleListPriceTable optional
+  o Rebate [] rebateTable optional 
+  o SupplyRequest [] supplyRequests optional 
+ 
   o String ciceroContractId optional
   o SupplyAgreementState agreementState default='DRAFT'
   --> Customer customer
@@ -39,17 +43,23 @@ asset SupplyAgreement identified by SAID {
 }
 
 transaction createSupplyAgreement {
+  o String SAID
   o DateTime effectiveDate
   o DateTime expiryDate
   o DateTime priceSetDate
-  o DateTime requestDatePrior
-  o String priceStructure
-  o Double annualBaseQuantity
-  o String qualitySpecification
+  o Integer requestDatePrior
   o Integer supplyFailTime
-  o WholesaleListPrice [] wholesaleListPriceTable
-  o Site [] sitesTable
-  o Rebate [] rebateTable
+  o Integer annualBaseQuantity
+  o Double penaltyPercentage
+  o Double capPercentage
+  o Site[] siteTable
+  o String qualitySpecification 
+
+  o String priceStructure optional
+  o WholesaleListPrice [] wholesaleListPriceTable optional
+  o Rebate [] rebateTable optional 
+  o SupplyRequest [] supplyRequests optional 
+
   --> Customer customer
   --> Distributor distributor
 }
@@ -67,8 +77,8 @@ event SupplyAgreementCreated {
 }
 
 transaction addSupplyRequest {
-  --> SupplyAgreement supplyAgreement
-  --> SupplyRequest SupplyRequest
+  --> SupplyAgreement supplyAgreements
+  --> SupplyRequest supplyRequest
 }
 
 event SupplyRequestAdded{
@@ -112,6 +122,7 @@ asset SupplyRequest identified by SRID {
   o String qualitySpecification
   o Double volume 
   o DateTime deliveryDate
+  o DateTime deliveryTime optional 
   o String deliveryLocation
   o Boolean supplyConfirmed default=false
   o SupplyRequestState requestState default='CREATED'
@@ -139,6 +150,7 @@ transaction createSupplyRequest {
   o String qualitySpecification
   o Double volume 
   o DateTime deliveryDate
+  o DateTime deliveryTime optional 
   o String deliveryLocation
 
   --> Customer customer
@@ -154,29 +166,29 @@ event SupplyRequestCreated {
   o String SRID
 }
 transaction confirmSupply {
-  --> SupplyRequest scr
+  --> SupplyRequest sr
 }
 
 transaction addSupplyRequestRecord {
-  --> SupplyRequest scr
+  --> SupplyRequest sr
   o String supplyRequestRecordHash
   o String supplyRequestRecordUrl
 }
 
 transaction addPurchaseOrder {
-  --> SupplyRequest scr
+  --> SupplyRequest sr
   o String purchaseOrderUrl
   o String purchaseOrderHash
 }
 
 transaction addDistributorInvoice {
-  --> SupplyRequest scr
+  --> SupplyRequest sr
   o String distributorInvoiceHash
   o String distributorInvoiceUrl
 }
 
 transaction addMeterSlip {
-  --> SupplyRequest scr
+  --> SupplyRequest sr
   o String meterSlipHash
   o String meterSlipUrl
 }
