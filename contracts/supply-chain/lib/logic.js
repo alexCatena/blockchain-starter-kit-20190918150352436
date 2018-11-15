@@ -316,7 +316,7 @@ async function createSupplyAgreement(tx) {
     let event = factory.newEvent('org.catena','SupplyAgreementCreated')
 
     event.SAID = SAID
-    event.Customer = tx.customer
+    event.customer = tx.customer
 
     emit(event)
 }

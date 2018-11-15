@@ -63,7 +63,7 @@ enum SupplyAgreementState {
 
 event SupplyAgreementCreated {
   o String SAID
-  o String Customer
+  --> Customer customer
 }
 
 transaction addSupplyRequest {
