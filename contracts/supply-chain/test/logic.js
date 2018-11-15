@@ -27,7 +27,7 @@ chai.should()
 chai.use(require('chai-as-promised'))
 
 const namespace = 'org.catena'
-const assetType = 'SupplyChainRequest'
+const assetType = 'SupplyRequest'
 const assetTypeUp = 'UpliftOrder'
 const assetNS = namespace + '.' + assetType
 const assetNSUp = namespace + '.' + assetTypeUp
@@ -186,17 +186,17 @@ describe('#' + namespace, () => {
     /**
      * Funtion to be reused to create a supply chain request at the beginning of tests
      */
-    async function createSupplyChainRequest() {
-        const transaction = factory.newTransaction(namespace, 'createSupplyChainRequest')
+    async function createSupplyRequest() {
+        const transaction = factory.newTransaction(namespace, 'createSupplyRequest')
         transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
         transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
         transaction.volume = 8000
-        transaction.cost = 15000
         transaction.fuelType = 'Petrol'
+        transaction.qualitySpecification = '14pm'
+
         transaction.deliveryDate = new Date()
         transaction.requestDate = new Date()
         transaction.deliveryLocation = 'Durban'
-        transaction.deliveryMethod = 'FREIGHT'
 
         await businessNetworkConnection.submitTransaction(transaction)
     }
@@ -207,29 +207,48 @@ describe('#' + namespace, () => {
         const transaction = factory.newTransaction(namespace, 'createSupplyAgreement')
         transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
         transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
-        transaction.comencementDate = new Date()
+
+        transaction.effectiveDate = new Date()
         transaction.expiryDate = new Date()
-        transaction.volume = 8000000
+        transaction.priceSetDate = new Date()
+        transaction.requestDatePrior = new Date()
+
+        transaction.priceStructure = 'P=D+C'
+        transaction.annualBaseQuantity = 8000000
+
+        transaction.qualitySpecification = 'Uknown'
+        transaction.supplyFailTime = 6
+
 
         let trac = factory.newConcept(namespace, 'Site')
         trac.site = 'Belville'
         trac.division = 'Transnet Rail Freight'
         trac.zone = '01A'
-        transaction.tractionSites = [trac]
+        trac.siteType = 'RTL'
 
         let home = factory.newConcept(namespace, 'Site')
+
         home.site = 'Straddle Carriers'
         home.division = 'Transnet Port Terminals'
         home.zone = '01A'
+        home.siteType = 'RTL'
 
-        transaction.homebaseSites = [home]
+        transaction.sitesTable = [home,trac]
 
         let rebate = factory.newConcept(namespace, 'Rebate')
         rebate.rebate = 29
-        rebate.volumeRange = '10 - 16'
-        rebate.discipline = 'Home Base'
+        rebate.siteType = 'Home Base'
 
         transaction.rebateTable = [rebate]
+
+        let price = factory.newConcept(namespace,'WholesaleListPrice')
+        price.postedDate = new Date()
+        price.fuelType = 'Petrol'
+        price.zone ='01A'
+        price.basicListPrice = 24
+        price.zoneDifferential = 12
+        price.wholesaleListPrice = 21
+        transaction.wholesaleListPriceTable = [price]
 
         await businessNetworkConnection.submitTransaction(transaction)
     }
@@ -237,17 +256,18 @@ describe('#' + namespace, () => {
      * Function to be reused to create uplift order
      */
     async function createUpliftOrder () {
-        await createSupplyChainRequest()
+        await createSupplyRequest()
         const transaction = factory.newTransaction(namespace, 'createUpliftOrder')
         transaction.pickupTime = new Date()
         transaction.volume = 10000
         transaction.mabd = new Date()
         transaction.origin = 'Durban'
         transaction.destination = 'Cape Town'
-        transaction.deliveryMethod = 'FREIGHT'
         transaction.fuelType = 'Petrol'
+        transaction.qualitySpecification = '14pm'
+        transaction.transportCompany = 'Siya'
 
-        transaction.supplyChainRequest = factory.newRelationship('org.catena', 'SupplyChainRequest', '1')
+        transaction.SupplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
         transaction.distributor = factory.newRelationship('org.catena', 'Distributor','D001')
         transaction.manufacturer = factory.newRelationship('org.catena','Manufacturer','M001')
         transaction.transporter = factory.newRelationship('org.catena', 'Transporter', 'T001')
@@ -263,21 +283,41 @@ describe('#' + namespace, () => {
         const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.catena.SupplyAgreement')
         let assets = await assetRegistry.getAll()
 
-        let scr = assets[0]
+        let sa = assets[0]
 
-        scr.volume.should.equal(8000000)
-        scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
-        scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
-        scr.tractionSites.length.should.equal(1)
-        scr.homebaseSites.length.should.equal(1)
-        scr. rebateTable.length.should.equal(1)
+        sa.annualBaseQuantity.should.equal(8000000)
+        sa.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
+        sa.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
+        sa.sitesTable.length.should.equal(2)
+        sa.wholesaleListPriceTable.length.should.equal(1)
+        sa.rebateTable.length.should.equal(1)
 
+    })
+    it('Can add contractId to Supply Agreement', async () => {
+        var NS  = 'org.catena'
+        await useIdentity(africoilCardName)
+
+        await createSupplyAgreement()
+
+        const transaction = factory.newTransaction(NS, 'addCiceroContract')
+
+        transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement', '1')
+        transaction.ciceroContractId = 'ABCD'
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.SupplyAgreement')
+
+        const assets = await assetRegistry.getAll()
+
+        let sa = assets[0]
+        sa.ciceroContractId.should.equal('ABCD')
     })
     it('Can create a supply chain request', async () => {
         var NS = 'org.catena'
         await useIdentity(africoilCardName)
 
-        await createSupplyChainRequest()
+        await createSupplyRequest()
 
         const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNS)
 
@@ -286,33 +326,32 @@ describe('#' + namespace, () => {
         let scr = assets[0]
 
         scr.volume.should.equal(8000)
-        scr.cost.should.equal(15000)
         scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
         scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
     })
     it('Can add supply chain request to supply agreement', async () => {
         await useIdentity(africoilCardName)
-        await createSupplyChainRequest()
+        await createSupplyRequest()
         await createSupplyAgreement()
 
-        const transaction = factory.newTransaction('org.catena', 'addSupplyChainRequest')
+        const transaction = factory.newTransaction('org.catena', 'addSupplyRequest')
         transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement','1')
-        transaction.supplyChainRequest = factory.newRelationship('org.catena', 'SupplyChainRequest', '1')
+        transaction.SupplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
         await businessNetworkConnection.submitTransaction(transaction)
         const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace +'.SupplyAgreement')
 
         const assets = await assetRegistry.getAll()
 
         let sa = assets[0]
-        sa.supplyChainRequests.length.should.equal(1)
+        sa.SupplyRequests.length.should.equal(1)
     })
     it('Can confirm supply', async () => {
         await useIdentity(africoilCardName)
 
-        await createSupplyChainRequest()
+        await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'confirmSupply')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyChainRequest', '1')
+        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         await businessNetworkConnection.submitTransaction(transaction)
 
@@ -328,10 +367,10 @@ describe('#' + namespace, () => {
     it('Can add supply request  docs', async () => {
         await useIdentity(africoilCardName)
 
-        await createSupplyChainRequest()
+        await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addSupplyRequestRecord')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyChainRequest', '1')
+        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         transaction.supplyRequestRecordHash = 'ABC'
         transaction.supplyRequestRecordUrl = 'Thisisaurl'
@@ -352,10 +391,10 @@ describe('#' + namespace, () => {
     it('Can add purchase order docs', async () => {
         await useIdentity(africoilCardName)
 
-        await createSupplyChainRequest()
+        await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addPurchaseOrder')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyChainRequest', '1')
+        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         transaction.purchaseOrderHash = 'ABC'
         transaction.purchaseOrderUrl = 'Thisisaurl'
@@ -376,10 +415,10 @@ describe('#' + namespace, () => {
     it('Can add Distibutor invoice docs', async () => {
         await useIdentity(africoilCardName)
 
-        await createSupplyChainRequest()
+        await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addDistributorInvoice')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyChainRequest', '1')
+        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         transaction.distributorInvoiceHash = 'ABC'
         transaction.distributorInvoiceUrl = 'Thisisaurl'
@@ -411,13 +450,12 @@ describe('#' + namespace, () => {
         let uplift = assets[0]
 
         uplift.volume.should.equal(10000)
-        uplift.supplyChainRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyChainRequest#1')
+        uplift.SupplyRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyRequest#1')
         uplift.distributor.getFullyQualifiedIdentifier().should.equal(NS +'.Distributor#D001')
         uplift.manufacturer.getFullyQualifiedIdentifier().should.equal(NS +'.Manufacturer#M001')
         uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS+'.Transporter#T001')
         uplift.origin.should.equal('Durban')
         uplift.destination.should.equal('Cape Town')
-        uplift.deliveryMethod.should.equal('FREIGHT')
         uplift.fuelType.should.equal('Petrol')
     })
     it('Can add a location history', async () => {

@@ -18,29 +18,6 @@
 
 namespace org.catena
 
-participant SampleParticipant identified by participantId {
-  o String participantId
-  o String firstName
-  o String lastName
-}
-
-asset SampleAsset identified by assetId {
-  o String assetId
-  --> SampleParticipant owner
-  o String value
-}
-
-transaction SampleTransaction {
-  --> SampleAsset asset
-  o String newValue
-}
-
-event SampleEvent {
-  --> SampleAsset asset
-  o String oldValue
-  o String newValue
-}
-
 asset SupplyAgreement identified by SAID {
   o String SAID
   o DateTime effectiveDate
@@ -58,7 +35,9 @@ asset SupplyAgreement identified by SAID {
   o WholesaleListPrice [] wholesaleListPriceTable optional
   o Rebate [] rebateTable optional 
   o SupplyRequest [] supplyRequests optional 
-
+ 
+  o String ciceroContractId optional
+  o SupplyAgreementState agreementState default='DRAFT'
   --> Customer customer
   --> Distributor distributor
 }
@@ -85,11 +64,36 @@ transaction createSupplyAgreement {
   --> Distributor distributor
 }
 
+enum SupplyAgreementState {
+  o DRAFT
+  o ACTIVE
+  o EXPIRED
+  o CANCELD
+}
+
+event SupplyAgreementCreated {
+  o String SAID
+  o String Customer
+}
+
 transaction addSupplyRequest {
   --> SupplyAgreement supplyAgreements
   --> SupplyRequest supplyRequest
 }
 
+event SupplyRequestAdded{
+  o String SAID
+  o String SRID
+}
+
+transaction addCiceroContract {
+  --> SupplyAgreement supplyAgreement
+  o String ciceroContractId
+}
+
+event CiceroContractAdded {
+  o String SAID
+}
 concept Site {
   o String site
   o String division
@@ -121,6 +125,7 @@ asset SupplyRequest identified by SRID {
   o DateTime deliveryTime optional 
   o String deliveryLocation
   o Boolean supplyConfirmed default=false
+  o SupplyRequestState requestState default='CREATED'
 
   //Documents
   o String supplyRequestRecordUrl optional
@@ -150,6 +155,15 @@ transaction createSupplyRequest {
 
   --> Customer customer
   --> Distributor distributor
+}
+enum SupplyRequestState {
+  o CREATED
+  o CONFIRMED
+  o COMPLETED
+  o FAILED
+}
+event SupplyRequestCreated {
+  o String SRID
 }
 transaction confirmSupply {
   --> SupplyRequest sr
@@ -195,6 +209,7 @@ asset UpliftOrder identified by UOID {
   o Location [] locationHistory optional
   o String transportCompany 
 
+
   --> SupplyRequest SupplyRequest
   --> Distributor distributor
   --> Manufacturer manufacturer
@@ -228,6 +243,7 @@ transaction createUpliftOrder {
   o String destination
   o String fuelType
   o String qualitySpecification
+  o String transportCompany 
 
   --> SupplyRequest SupplyRequest
   --> Distributor distributor

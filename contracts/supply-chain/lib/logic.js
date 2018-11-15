@@ -22,25 +22,25 @@
  * @param {org.catena.SampleTransaction} sampleTransaction
  * @transaction
  */
-async function sampleTransaction(tx) {
-    // Save the old value of the asset.
-    const oldValue = tx.asset.value
+// async function sampleTransaction(tx) {
+//     // Save the old value of the asset.
+//     const oldValue = tx.asset.value
 
-    // Update the asset with the new value.
-    tx.asset.value = tx.newValue
+//     // Update the asset with the new value.
+//     tx.asset.value = tx.newValue
 
-    // Get the asset registry for the asset.
-    const assetRegistry = await getAssetRegistry('org.catena.SampleAsset')
-    // Update the asset in the asset registry.
-    await assetRegistry.update(tx.asset)
+//     // Get the asset registry for the asset.
+//     const assetRegistry = await getAssetRegistry('org.catena.SampleAsset')
+//     // Update the asset in the asset registry.
+//     await assetRegistry.update(tx.asset)
 
-    // Emit an event for the modified asset.
-    let event = getFactory().newEvent('org.catena', 'SampleEvent')
-    event.asset = tx.asset
-    event.oldValue = oldValue
-    event.newValue = tx.newValue
-    emit(event)
-}
+//     // Emit an event for the modified asset.
+//     let event = getFactory().newEvent('org.catena', 'SampleEvent')
+//     event.asset = tx.asset
+//     event.oldValue = oldValue
+//     event.newValue = tx.newValue
+//     emit(event)
+// }
 
 /**
  * Create Supply Agreement transaction
@@ -57,13 +57,28 @@ async function createSupplyAgreement(tx) {
 
     var sr = factory.newResource(NS, 'SupplyAgreement', SAID)
 
-    sr.volume = tx.volume
+    
     sr.effectiveDate = tx.effectiveDate
     sr.expiryDate = tx.expiryDate
+    sr.volume = tx.volume
+    sr.priceSetDate = tx.priceSetDate
+    sr.requestDatePrior = tx.requestDatePrior
+    sr.supplyFailTime = tx.supplyFailTime
+    sr.annualBaseQuantity = tx.annualBaseQuantity
+    sr.penaltyPercentage = tx.penaltyPercentage
+    sr.capPercenatge = tx.capPercenatge
+    sr.siteTable = tx.siteTable
+    sr.qualitySpecification = tx.qualitySpecification
+
     sr.customer = tx.customer
     sr.distributor = tx.distributor
-    sr.siteTable = tx.siteTable
-    return registry.add(sr)
+    
+    await registry.add(sr)
+
+    let event = factory.newEvent('org.catena', 'SupplyAgreementCreated')
+    event.SAID = SAID
+
+    emit(event)
 }
 
 /**
@@ -81,17 +96,26 @@ async function createSupplyRequest (tx) {
 
     var sr = factory.newResource(NS, 'SupplyRequest', SRID)
 
+
+
+    sr.requestDate = tx.requestDate
     sr.volume = tx.volume
     sr.fuelType = tx.fuelType
-    sr.cost = tx.cost
+    sr.volume = tx.volume 
     sr.deliveryDate = tx.deliveryDate
-    sr.requestDate = tx.requestDate
+    sr.deliveryTime = tx.deliveryTime
+    sr.qualitySpecification = tx.qualitySpecification
     sr.customer = tx.customer
     sr.distributor = tx.distributor
     sr.deliveryLocation = tx.deliveryLocation
     sr.deliveryMethod = tx.deliveryMethod
-    sr.requestDate = tx.requestDate
-    return registry.add(sr)
+    
+    await registry.add(sr)
+
+    let event = factory.newEvent('org.catena', 'SupplyRequestCreated')
+    event.SRID = SRID
+
+    emit(event)
 }
 
 
@@ -182,8 +206,9 @@ async function createUpliftOrder(tx) {
     uplift.volume = tx.volume
     uplift.origin = tx.origin
     uplift.destination = tx.destination
-    uplift.deliveryMethod = tx.deliveryMethod
+    uplift.qualitySpecification = tx.qualitySpecification
     uplift.fuelType = tx.fuelType
+    uplift.transportCompany = tx.transportCompany
 
     uplift.supplyRequest = tx.supplyRequest
     uplift.distributor = tx.distributor
@@ -315,5 +340,24 @@ async function addSupplyRequest (tx) {
     }else{
         tx.supplyAgreement.supplyRequests = [...tx.supplyAgreement.supplyRequests, tx.supplyRequest]
     }
-    registry.update(tx.supplyAgreement)
+    await registry.update(tx.supplyAgreement)
+
+    let event = getFactory().newEvent('org.catena','SupplyRequestAdded')
+
+    event.SAID= tx.supplyAgreement.SAID
+    event.SRID = tx.SupplyRequest.SRID
+
+    emit(event)
+}
+/**
+ * add cicero contract Id to the supply agreement
+ * @param {org.catena.addCiceroContract} tx
+ * @transaction
+ */
+async function addCiceroContract (tx){
+    const registry = await getAssetRegistry('org.catena.SupplyAgreement')
+
+    tx.supplyAgreement.ciceroContractId = tx.ciceroContractId
+
+    return registry.update(tx.supplyAgreement)
 }
