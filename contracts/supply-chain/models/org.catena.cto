@@ -77,7 +77,7 @@ event SupplyAgreementCreated {
 }
 
 transaction addSupplyRequest {
-  --> SupplyAgreement supplyAgreements
+  --> SupplyAgreement supplyAgreement
   --> SupplyRequest supplyRequest
 }
 
