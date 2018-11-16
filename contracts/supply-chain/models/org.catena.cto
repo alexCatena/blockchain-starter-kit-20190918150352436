@@ -43,7 +43,6 @@ asset SupplyAgreement identified by SAID {
 }
 
 transaction createSupplyAgreement {
-  o String SAID
   o DateTime effectiveDate
   o DateTime expiryDate
   o DateTime priceSetDate
@@ -210,7 +209,7 @@ asset UpliftOrder identified by UOID {
   o String transportCompany 
 
 
-  --> SupplyRequest SupplyRequest
+  --> SupplyRequest supplyRequest
   --> Distributor distributor
   --> Manufacturer manufacturer
   --> Transporter transporter
@@ -245,7 +244,7 @@ transaction createUpliftOrder {
   o String qualitySpecification
   o String transportCompany 
 
-  --> SupplyRequest SupplyRequest
+  --> SupplyRequest supplyRequest
   --> Distributor distributor
   --> Manufacturer manufacturer
   --> Transporter transporter

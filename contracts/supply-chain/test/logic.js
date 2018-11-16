@@ -211,7 +211,7 @@ describe('#' + namespace, () => {
         transaction.effectiveDate = new Date()
         transaction.expiryDate = new Date()
         transaction.priceSetDate = new Date()
-        transaction.requestDatePrior = new Date()
+        transaction.requestDatePrior = 2
 
         transaction.priceStructure = 'P=D+C'
         transaction.annualBaseQuantity = 8000000
@@ -219,6 +219,9 @@ describe('#' + namespace, () => {
         transaction.qualitySpecification = 'Uknown'
         transaction.supplyFailTime = 6
 
+        transaction.penaltyPercentage = 10
+
+        transaction.capPercentage = 10
 
         let trac = factory.newConcept(namespace, 'Site')
         trac.site = 'Belville'
@@ -233,7 +236,7 @@ describe('#' + namespace, () => {
         home.zone = '01A'
         home.siteType = 'RTL'
 
-        transaction.sitesTable = [home,trac]
+        transaction.siteTable = [home,trac]
 
         let rebate = factory.newConcept(namespace, 'Rebate')
         rebate.rebate = 29
@@ -267,7 +270,7 @@ describe('#' + namespace, () => {
         transaction.qualitySpecification = '14pm'
         transaction.transportCompany = 'Siya'
 
-        transaction.SupplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+        transaction.supplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
         transaction.distributor = factory.newRelationship('org.catena', 'Distributor','D001')
         transaction.manufacturer = factory.newRelationship('org.catena','Manufacturer','M001')
         transaction.transporter = factory.newRelationship('org.catena', 'Transporter', 'T001')
@@ -288,7 +291,7 @@ describe('#' + namespace, () => {
         sa.annualBaseQuantity.should.equal(8000000)
         sa.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
         sa.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
-        sa.sitesTable.length.should.equal(2)
+        sa.siteTable.length.should.equal(2)
         sa.wholesaleListPriceTable.length.should.equal(1)
         sa.rebateTable.length.should.equal(1)
 
@@ -336,14 +339,14 @@ describe('#' + namespace, () => {
 
         const transaction = factory.newTransaction('org.catena', 'addSupplyRequest')
         transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement','1')
-        transaction.SupplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+        transaction.supplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
         await businessNetworkConnection.submitTransaction(transaction)
         const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace +'.SupplyAgreement')
 
         const assets = await assetRegistry.getAll()
 
         let sa = assets[0]
-        sa.SupplyRequests.length.should.equal(1)
+        sa.supplyRequests.length.should.equal(1)
     })
     it('Can confirm supply', async () => {
         await useIdentity(africoilCardName)
@@ -351,7 +354,7 @@ describe('#' + namespace, () => {
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'confirmSupply')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
+        transaction.sr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         await businessNetworkConnection.submitTransaction(transaction)
 
@@ -370,7 +373,7 @@ describe('#' + namespace, () => {
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addSupplyRequestRecord')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
+        transaction.sr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         transaction.supplyRequestRecordHash = 'ABC'
         transaction.supplyRequestRecordUrl = 'Thisisaurl'
@@ -394,7 +397,7 @@ describe('#' + namespace, () => {
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addPurchaseOrder')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
+        transaction.sr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         transaction.purchaseOrderHash = 'ABC'
         transaction.purchaseOrderUrl = 'Thisisaurl'
@@ -418,7 +421,7 @@ describe('#' + namespace, () => {
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addDistributorInvoice')
-        transaction.scr = factory.newRelationship(namespace, 'SupplyRequest', '1')
+        transaction.sr = factory.newRelationship(namespace, 'SupplyRequest', '1')
 
         transaction.distributorInvoiceHash = 'ABC'
         transaction.distributorInvoiceUrl = 'Thisisaurl'
@@ -450,7 +453,7 @@ describe('#' + namespace, () => {
         let uplift = assets[0]
 
         uplift.volume.should.equal(10000)
-        uplift.SupplyRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyRequest#1')
+        uplift.supplyRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyRequest#1')
         uplift.distributor.getFullyQualifiedIdentifier().should.equal(NS +'.Distributor#D001')
         uplift.manufacturer.getFullyQualifiedIdentifier().should.equal(NS +'.Manufacturer#M001')
         uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS+'.Transporter#T001')

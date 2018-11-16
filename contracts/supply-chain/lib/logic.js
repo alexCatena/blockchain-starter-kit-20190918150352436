@@ -57,26 +57,27 @@ async function createSupplyAgreement(tx) {
 
     var sr = factory.newResource(NS, 'SupplyAgreement', SAID)
 
-    
+
     sr.effectiveDate = tx.effectiveDate
     sr.expiryDate = tx.expiryDate
-    sr.volume = tx.volume
     sr.priceSetDate = tx.priceSetDate
     sr.requestDatePrior = tx.requestDatePrior
     sr.supplyFailTime = tx.supplyFailTime
     sr.annualBaseQuantity = tx.annualBaseQuantity
     sr.penaltyPercentage = tx.penaltyPercentage
-    sr.capPercenatge = tx.capPercenatge
+    sr.capPercentage = tx.capPercentage
     sr.siteTable = tx.siteTable
     sr.qualitySpecification = tx.qualitySpecification
-
+    sr.wholesaleListPriceTable = tx.wholesaleListPriceTable
+    sr.rebateTable = tx.rebateTable
     sr.customer = tx.customer
     sr.distributor = tx.distributor
-    
+
     await registry.add(sr)
 
     let event = factory.newEvent('org.catena', 'SupplyAgreementCreated')
     event.SAID = SAID
+    event.customer = tx.customer
 
     emit(event)
 }
@@ -101,15 +102,13 @@ async function createSupplyRequest (tx) {
     sr.requestDate = tx.requestDate
     sr.volume = tx.volume
     sr.fuelType = tx.fuelType
-    sr.volume = tx.volume 
+    sr.volume = tx.volume
     sr.deliveryDate = tx.deliveryDate
     sr.deliveryTime = tx.deliveryTime
     sr.qualitySpecification = tx.qualitySpecification
     sr.customer = tx.customer
     sr.distributor = tx.distributor
     sr.deliveryLocation = tx.deliveryLocation
-    sr.deliveryMethod = tx.deliveryMethod
-    
     await registry.add(sr)
 
     let event = factory.newEvent('org.catena', 'SupplyRequestCreated')
@@ -345,7 +344,7 @@ async function addSupplyRequest (tx) {
     let event = getFactory().newEvent('org.catena','SupplyRequestAdded')
 
     event.SAID= tx.supplyAgreement.SAID
-    event.SRID = tx.SupplyRequest.SRID
+    event.SRID = tx.supplyRequest.SRID
 
     emit(event)
 }

@@ -15,22 +15,28 @@
     "composer",
     "composer-network"
   ],
+    "husky": {
+      "hooks": {
+        "pre-commit": "npm test"
+      }
+    },
   "author": "Alexander Whiting",
   "email": "alex@catenabloc.com",
   "license": "Apache-2.0",
   "devDependencies": {
+    "chai": "latest",
+    "chai-as-promised": "latest",
     "composer-admin": "^0.20.2",
     "composer-cli": "^0.20.2",
     "composer-client": "^0.20.2",
     "composer-common": "^0.20.2",
     "composer-connector-embedded": "^0.20.2",
     "composer-cucumber-steps": "^0.20.2",
-    "chai": "latest",
-    "chai-as-promised": "latest",
     "cucumber": "^2.2.0",
     "eslint": "latest",
-    "nyc": "latest",
+    "husky": "^1.1.4",
     "mkdirp": "latest",
-    "mocha": "latest"
+    "mocha": "latest",
+    "nyc": "latest"
   }
 }
