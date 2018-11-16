@@ -81,6 +81,21 @@ async function createSupplyAgreement(tx) {
 
     emit(event)
 }
+/**
+ * Add supply Agreement document url transaction
+ * @param {org.catena.addSupplyAgreementDocument} tx
+ * @transaction
+ */
+async function addSupplyAgreementDocument (tx) {
+    var NS = 'org.catena.SupplyAgreement'
+
+    const registry = await getAssetRegistry(NS)
+
+    tx.supplyAgreement.supplyAgreementDocumentHash = tx.supplyAgreementDocumentHash
+    tx.supplyAgreement.supplyAgreementDocumentUrl = tx.supplyAgreementDocumentUrl
+
+    await registry.update(tx.supplyAgreement)
+}
 
 /**
  * Create Supply Request transaction

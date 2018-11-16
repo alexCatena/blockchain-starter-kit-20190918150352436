@@ -35,7 +35,10 @@ asset SupplyAgreement identified by SAID {
   o WholesaleListPrice [] wholesaleListPriceTable optional
   o Rebate [] rebateTable optional 
   o SupplyRequest [] supplyRequests optional 
- 
+  
+  o String supplyAgreementDocumentHash optional
+  o String supplyAgreementDocumentUrl optional
+
   o String ciceroContractId optional
   o SupplyAgreementState agreementState default='DRAFT'
   --> Customer customer
@@ -59,10 +62,15 @@ transaction createSupplyAgreement {
   o Rebate [] rebateTable optional 
   o SupplyRequest [] supplyRequests optional 
 
+
   --> Customer customer
   --> Distributor distributor
 }
-
+transaction addSupplyAgreementDocument {
+  o String supplyAgreementDocumentHash
+  o String supplyAgreementDocumentUrl
+  --> SupplyAgreement supplyAgreement
+}
 enum SupplyAgreementState {
   o DRAFT
   o ACTIVE

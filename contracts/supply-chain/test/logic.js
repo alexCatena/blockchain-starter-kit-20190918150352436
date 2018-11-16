@@ -332,6 +332,29 @@ describe('#' + namespace, () => {
         scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
         scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
     })
+    it('Can add supply agreement Documnet', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+
+        const transaction = factory.newTransaction('org.catena', 'addSupplyAgreementDocument')
+        transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement', '1')
+
+
+        transaction.supplyAgreementDocumentHash = 'ABC'
+        transaction.supplyAgreementDocumentUrl = 'Thisisaurl'
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.SupplyAgreement')
+
+        const assets = await assetRegistry.getAll()
+
+        let sa = assets[0]
+
+        sa.supplyAgreementDocumentHash.should.equal('ABC')
+        sa.supplyAgreementDocumentUrl.should.equal('Thisisaurl')
+
+    })
     it('Can add supply chain request to supply agreement', async () => {
         await useIdentity(africoilCardName)
         await createSupplyRequest()
