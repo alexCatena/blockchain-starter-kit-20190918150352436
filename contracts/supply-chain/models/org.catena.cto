@@ -100,6 +100,8 @@ transaction addCiceroContract {
 
 event CiceroContractAdded {
   o String SAID
+  o SupplyAgreementState status
+  o String message
 }
 concept Site {
   o String site
@@ -128,6 +130,7 @@ asset SupplyRequest identified by SRID {
   o String fuelType
   o String qualitySpecification
   o Double volume 
+  o DateTime mabt 
   o DateTime deliveryDate
   o DateTime deliveryTime optional 
   o String deliveryLocation
@@ -147,6 +150,7 @@ asset SupplyRequest identified by SRID {
   o String meterSlipUrl optional
   o String meterSlipHash optional
 
+  --> SupplyAgreement supplyAgreement
   --> Customer customer
   --> Distributor distributor
 }
@@ -159,9 +163,23 @@ transaction createSupplyRequest {
   o DateTime deliveryDate
   o DateTime deliveryTime optional 
   o String deliveryLocation
+  o DateTime mabt
 
+  --> SupplyAgreement supplyAgreement
   --> Customer customer
   --> Distributor distributor
+}
+
+transaction checkLateSupply {
+  o String resourceId
+  o String contractId
+  o LateSupplyRequest request
+}
+concept LateSupplyRequest {
+  o String $class default="org.catena.LateSupplyRequest"
+  o Integer requestDatePrior
+  o DateTime requestDate
+  o DateTime deliveryDate
 }
 enum SupplyRequestState {
   o CREATED

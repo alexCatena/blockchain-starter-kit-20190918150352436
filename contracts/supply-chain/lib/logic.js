@@ -57,7 +57,6 @@ async function createSupplyAgreement(tx) {
 
     var sr = factory.newResource(NS, 'SupplyAgreement', SAID)
 
-
     sr.effectiveDate = tx.effectiveDate
     sr.expiryDate = tx.expiryDate
     sr.priceSetDate = tx.priceSetDate
@@ -86,7 +85,7 @@ async function createSupplyAgreement(tx) {
  * @param {org.catena.addSupplyAgreementDocument} tx
  * @transaction
  */
-async function addSupplyAgreementDocument (tx) {
+async function addSupplyAgreementDocument(tx) {
     var NS = 'org.catena.SupplyAgreement'
 
     const registry = await getAssetRegistry(NS)
@@ -102,18 +101,38 @@ async function addSupplyAgreementDocument (tx) {
  * @param {org.catena.createSupplyRequest} tx
  * @transaction
  */
-async function createSupplyRequest (tx) {
-    const registry = await getAssetRegistry('org.catena.SupplyRequest')
-    var assets = await registry.getAll()
+async function createSupplyRequest(tx) {
     var factory = getFactory()
+    let request = factory.newConcept('org.catena', 'LateSupplyRequest')
+    request.requestDatePrior = tx.supplyAgreement.requestDatePrior
+    request.requestDate = tx.requestDate
+    request.deliveryDate = tx.deliveryDate
+
+    let checkSupply = factory.newResource(
+        'org.catena',
+        'checkLateSupply',
+        tx.transactionId + ':invokeCicero'
+    )
+    checkSupply.request = request
+    checkSupply.resourceId = tx.supplyAgreement.distributor.UserId
+    checkSupply.contractId = tx.supplyAgreement.ciceroContractId
+    checkSupply.timestamp = new Date()
+    let result = await checkLateSupply(checkSupply)
+
+    if (!result.body.response.supplyRequestValid) {
+        throw new Error('Delivery Date does not fall within the request date prior range')
+    }
+    const registry = await getAssetRegistry('org.catena.SupplyRequest')
+
+    var assets = await registry.getAll()
 
     var NS = 'org.catena'
     var SRID = (assets.length + 1).toString()
 
     var sr = factory.newResource(NS, 'SupplyRequest', SRID)
 
-
-
+    sr.mabt = tx.mabt
+    sr.supplyAgreement = tx.supplyAgreement
     sr.requestDate = tx.requestDate
     sr.volume = tx.volume
     sr.fuelType = tx.fuelType
@@ -131,13 +150,23 @@ async function createSupplyRequest (tx) {
 
     emit(event)
 }
-
-
 /**
-  * Confirm Supply Transaction
-  * @param {org.catena.confirmSupply} tx
-  * @transaction
-  */
+ * Calls the cicero service to see if the supply is valid
+ * @param {org.catena.checkLateSupply} tx
+ * @transaction
+ */
+async function checkLateSupply(tx) {
+    let result = await post(
+        'https://txtsfvdocf.execute-api.us-west-2.amazonaws.com/Prod/cicero-service/execute',
+        tx
+    )
+    return result
+}
+/**
+ * Confirm Supply Transaction
+ * @param {org.catena.confirmSupply} tx
+ * @transaction
+ */
 async function confirmSupply(tx) {
     var NS = 'org.catena.SupplyRequest'
 
@@ -148,12 +177,11 @@ async function confirmSupply(tx) {
     await registry.update(tx.sr)
 }
 
-
 /**
-   * Add supply Request Record
-   * @param {org.catena.addSupplyRequestRecord} tx
-   * @transaction
-   */
+ * Add supply Request Record
+ * @param {org.catena.addSupplyRequestRecord} tx
+ * @transaction
+ */
 async function addSupplyRequestRecord(tx) {
     var NS = 'org.catena.SupplyRequest'
 
@@ -164,7 +192,6 @@ async function addSupplyRequestRecord(tx) {
 
     await registry.update(tx.sr)
 }
-
 
 /**
  * Add Purchase Order transaction
@@ -195,7 +222,6 @@ async function addDistributorInvoice(tx) {
     tx.sr.distributorInvoiceUrl = tx.distributorInvoiceUrl
     await registry.update(tx.sr)
 }
-
 
 /**
  * Create Uplift Order transaction
@@ -237,20 +263,19 @@ async function createUpliftOrder(tx) {
  * @param {org.catena.addLocationHistory} tx
  * @transaction
  */
-async function addLocationHistory (tx) {
+async function addLocationHistory(tx) {
     var NS = 'org.catena.UpliftOrder'
     var factory = getFactory()
 
     const registry = await getAssetRegistry(NS)
 
-
-    const location = factory.newConcept('org.catena','Location')
+    const location = factory.newConcept('org.catena', 'Location')
     location.longitude = tx.longitude
     location.latitude = tx.latitude
 
-    if(typeof tx.upliftOrder.locationHistory === 'undefined'){
+    if (typeof tx.upliftOrder.locationHistory === 'undefined') {
         tx.upliftOrder.locationHistory = [location]
-    }else{
+    } else {
         tx.upliftOrder.locationHistory = [...tx.upliftOrder.locationHistory, location]
     }
 
@@ -262,7 +287,7 @@ async function addLocationHistory (tx) {
  * @param {org.catena.addCollectionOrderDocument} tx
  * @transaction
  */
-async function addCollectionOrderDocument (tx) {
+async function addCollectionOrderDocument(tx) {
     var NS = 'org.catena.UpliftOrder'
 
     const registry = await getAssetRegistry(NS)
@@ -272,8 +297,6 @@ async function addCollectionOrderDocument (tx) {
 
     await registry.update(tx.upliftOrder)
 }
-
-
 
 /**
  * add collection receipt document transaction
@@ -291,7 +314,6 @@ async function addCollectionReceiptDocument(tx) {
     await registry.update(tx.upliftOrder)
 }
 
-
 /**
  * add manufacturer invoice transaction
  * @param {org.catena.addManufacturerInvoice} tx
@@ -307,7 +329,6 @@ async function addManufacturerInvoice(tx) {
 
     await registry.update(tx.upliftOrder)
 }
-
 
 /**
  * add Transportation Invoice transaction
@@ -338,7 +359,6 @@ async function confirmCollectionDate(tx) {
     tx.upliftOrder.collectionDateConfirmed = true
 
     await registry.update(tx.upliftOrder)
-
 }
 
 /**
@@ -346,19 +366,19 @@ async function confirmCollectionDate(tx) {
  * @param {org.catena.addSupplyRequest} tx
  * @transaction
  */
-async function addSupplyRequest (tx) {
+async function addSupplyRequest(tx) {
     const registry = await getAssetRegistry('org.catena.SupplyAgreement')
 
-    if(typeof tx.supplyAgreement.supplyRequests === 'undefined'){
+    if (typeof tx.supplyAgreement.supplyRequests === 'undefined') {
         tx.supplyAgreement.supplyRequests = [tx.supplyRequest]
-    }else{
+    } else {
         tx.supplyAgreement.supplyRequests = [...tx.supplyAgreement.supplyRequests, tx.supplyRequest]
     }
     await registry.update(tx.supplyAgreement)
 
-    let event = getFactory().newEvent('org.catena','SupplyRequestAdded')
+    let event = getFactory().newEvent('org.catena', 'SupplyRequestAdded')
 
-    event.SAID= tx.supplyAgreement.SAID
+    event.SAID = tx.supplyAgreement.SAID
     event.SRID = tx.supplyRequest.SRID
 
     emit(event)
@@ -368,10 +388,17 @@ async function addSupplyRequest (tx) {
  * @param {org.catena.addCiceroContract} tx
  * @transaction
  */
-async function addCiceroContract (tx){
+async function addCiceroContract(tx) {
     const registry = await getAssetRegistry('org.catena.SupplyAgreement')
 
     tx.supplyAgreement.ciceroContractId = tx.ciceroContractId
+    tx.supplyAgreement.agreementState = 'ACTIVE'
+    let returnValue = await registry.update(tx.supplyAgreement)
 
-    return registry.update(tx.supplyAgreement)
+    let event = getFactory().newEvent('org.catena', 'CiceroContractAdded')
+    event.SAID = tx.supplyAgreement.SAID
+    event.status = 'ACTIVE'
+    event.message = 'Agreement successfully activated.'
+    emit(event)
+    return returnValue
 }

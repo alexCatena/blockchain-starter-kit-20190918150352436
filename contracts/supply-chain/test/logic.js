@@ -46,7 +46,9 @@ const participantNSCust = namespace + '.' + participantTypeCust
 
 describe('#' + namespace, () => {
     // In-memory card store for testing so cards are not persisted to the file system
-    const cardStore = require('composer-common').NetworkCardStoreManager.getCardStore( { type: 'composer-wallet-inmemory' } )
+    const cardStore = require('composer-common').NetworkCardStoreManager.getCardStore({
+        type: 'composer-wallet-inmemory'
+    })
 
     // Embedded connection used for local testing
     const connectionProfile = {
@@ -74,12 +76,11 @@ describe('#' + namespace, () => {
 
     let businessNetworkName
 
-
     /**
- *
- * @param {String} cardName The card name to use for this identity
- * @param {Object} identity The identity details
- */
+     *
+     * @param {String} cardName The card name to use for this identity
+     * @param {Object} identity The identity details
+     */
     async function importCardForIdentity(cardName, identity) {
         const metadata = {
             userName: identity.userID,
@@ -99,7 +100,7 @@ describe('#' + namespace, () => {
         const deployerMetadata = {
             version: 1,
             userName: 'PeerAdmin',
-            roles: [ 'PeerAdmin', 'ChannelAdmin' ]
+            roles: ['PeerAdmin', 'ChannelAdmin']
         }
         const deployerCard = new IdCard(deployerMetadata, connectionProfile)
         deployerCard.setCredentials(credentials)
@@ -111,11 +112,12 @@ describe('#' + namespace, () => {
         await adminConnection.connect(deployerCardName)
     })
 
-
     // This is called before each test is executed.
     beforeEach(async () => {
         // Generate a business network definition from the project directory.
-        let businessNetworkDefinition = await BusinessNetworkDefinition.fromDirectory(path.resolve(__dirname, '..'))
+        let businessNetworkDefinition = await BusinessNetworkDefinition.fromDirectory(
+            path.resolve(__dirname, '..')
+        )
         businessNetworkName = businessNetworkDefinition.getName()
         await adminConnection.install(businessNetworkDefinition)
         const startOptions = {
@@ -126,7 +128,11 @@ describe('#' + namespace, () => {
                 }
             ]
         }
-        const adminCards = await adminConnection.start(businessNetworkName, businessNetworkDefinition.getVersion(), startOptions)
+        const adminCards = await adminConnection.start(
+            businessNetworkName,
+            businessNetworkDefinition.getVersion(),
+            startOptions
+        )
         await adminConnection.importCard(adminCardName, adminCards.get('admin'))
 
         // Create and establish a business network connection
@@ -140,7 +146,9 @@ describe('#' + namespace, () => {
         // Get the factory for the business network.
         factory = businessNetworkConnection.getBusinessNetwork().getFactory()
 
-        const participantRegistry = await businessNetworkConnection.getParticipantRegistry(participantNS)
+        const participantRegistry = await businessNetworkConnection.getParticipantRegistry(
+            participantNS
+        )
         // Create the participants.
         const africoil = factory.newResource(namespace, participantType, 'D001')
         const cust = factory.newResource(namespace, participantTypeCust, 'C001')
@@ -165,7 +173,10 @@ describe('#' + namespace, () => {
         // assetRegistry.addAll([asset1, asset2])
 
         // Issue the identities.
-        let identity = await businessNetworkConnection.issueIdentity(participantNS + '#D001', 'D001')
+        let identity = await businessNetworkConnection.issueIdentity(
+            participantNS + '#D001',
+            'D001'
+        )
         await importCardForIdentity(africoilCardName, identity)
     })
 
@@ -177,7 +188,7 @@ describe('#' + namespace, () => {
         await businessNetworkConnection.disconnect()
         businessNetworkConnection = new BusinessNetworkConnection({ cardStore: cardStore })
         events = []
-        businessNetworkConnection.on('event', (event) => {
+        businessNetworkConnection.on('event', event => {
             events.push(event)
         })
         await businessNetworkConnection.connect(cardName)
@@ -197,13 +208,15 @@ describe('#' + namespace, () => {
         transaction.deliveryDate = new Date()
         transaction.requestDate = new Date()
         transaction.deliveryLocation = 'Durban'
+        transaction.supplyAgreement = factory.newRelationship(namespace, 'SupplyAgreement', '1')
+        transaction.mabt = new Date()
 
         await businessNetworkConnection.submitTransaction(transaction)
     }
     /**
      * Function to create a supply agreement
      */
-    async function createSupplyAgreement(){
+    async function createSupplyAgreement() {
         const transaction = factory.newTransaction(namespace, 'createSupplyAgreement')
         transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
         transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
@@ -236,7 +249,7 @@ describe('#' + namespace, () => {
         home.zone = '01A'
         home.siteType = 'RTL'
 
-        transaction.siteTable = [home,trac]
+        transaction.siteTable = [home, trac]
 
         let rebate = factory.newConcept(namespace, 'Rebate')
         rebate.rebate = 29
@@ -244,10 +257,10 @@ describe('#' + namespace, () => {
 
         transaction.rebateTable = [rebate]
 
-        let price = factory.newConcept(namespace,'WholesaleListPrice')
+        let price = factory.newConcept(namespace, 'WholesaleListPrice')
         price.postedDate = new Date()
         price.fuelType = 'Petrol'
-        price.zone ='01A'
+        price.zone = '01A'
         price.basicListPrice = 24
         price.zoneDifferential = 12
         price.wholesaleListPrice = 21
@@ -256,9 +269,21 @@ describe('#' + namespace, () => {
         await businessNetworkConnection.submitTransaction(transaction)
     }
     /**
+     * Resusable function to add cicero contract Id
+     */
+    async function addCiceroContract(id) {
+        var NS = 'org.catena'
+        const transaction = factory.newTransaction(NS, 'addCiceroContract')
+
+        transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement', '1')
+        transaction.ciceroContractId = id
+
+        await businessNetworkConnection.submitTransaction(transaction)
+    }
+    /**
      * Function to be reused to create uplift order
      */
-    async function createUpliftOrder () {
+    async function createUpliftOrder() {
         await createSupplyRequest()
         const transaction = factory.newTransaction(namespace, 'createUpliftOrder')
         transaction.pickupTime = new Date()
@@ -271,8 +296,8 @@ describe('#' + namespace, () => {
         transaction.transportCompany = 'Siya'
 
         transaction.supplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
-        transaction.distributor = factory.newRelationship('org.catena', 'Distributor','D001')
-        transaction.manufacturer = factory.newRelationship('org.catena','Manufacturer','M001')
+        transaction.distributor = factory.newRelationship('org.catena', 'Distributor', 'D001')
+        transaction.manufacturer = factory.newRelationship('org.catena', 'Manufacturer', 'M001')
         transaction.transporter = factory.newRelationship('org.catena', 'Transporter', 'T001')
         await businessNetworkConnection.submitTransaction(transaction)
     }
@@ -283,7 +308,9 @@ describe('#' + namespace, () => {
 
         await createSupplyAgreement()
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.catena.SupplyAgreement')
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            'org.catena.SupplyAgreement'
+        )
         let assets = await assetRegistry.getAll()
 
         let sa = assets[0]
@@ -294,22 +321,17 @@ describe('#' + namespace, () => {
         sa.siteTable.length.should.equal(2)
         sa.wholesaleListPriceTable.length.should.equal(1)
         sa.rebateTable.length.should.equal(1)
-
     })
     it('Can add contractId to Supply Agreement', async () => {
-        var NS  = 'org.catena'
+        var NS = 'org.catena'
         await useIdentity(africoilCardName)
 
         await createSupplyAgreement()
+        await addCiceroContract('ABCD')
 
-        const transaction = factory.newTransaction(NS, 'addCiceroContract')
-
-        transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement', '1')
-        transaction.ciceroContractId = 'ABCD'
-
-        await businessNetworkConnection.submitTransaction(transaction)
-
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.SupplyAgreement')
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyAgreement'
+        )
 
         const assets = await assetRegistry.getAll()
 
@@ -319,7 +341,8 @@ describe('#' + namespace, () => {
     it('Can create a supply chain request', async () => {
         var NS = 'org.catena'
         await useIdentity(africoilCardName)
-
+        await createSupplyAgreement()
+        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
         await createSupplyRequest()
 
         const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNS)
@@ -332,20 +355,51 @@ describe('#' + namespace, () => {
         scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
         scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
     })
+    it.only('Reject supply request on requestDatePrior', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
+        const transaction = factory.newTransaction(namespace, 'createSupplyRequest')
+        transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
+        transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
+        transaction.volume = 8000
+        transaction.fuelType = 'Petrol'
+        transaction.qualitySpecification = '14pm'
+
+        transaction.deliveryDate = new Date('2018-11-7')
+        transaction.requestDate = new Date('2018-11-6')
+        transaction.deliveryLocation = 'Durban'
+        transaction.supplyAgreement = factory.newRelationship(namespace, 'SupplyAgreement', '1')
+        transaction.mabt = new Date()
+
+        await businessNetworkConnection.submitTransaction(transaction).catch(err => {
+            err.should.exist
+            err.should.be.an.instanceOf(Error)
+            err.message.should.equal(
+                'Delivery Date does not fall within the request date prior range'
+            )
+        })
+
+        // console.log(result)
+
+        // result.should.equal(
+        //     'Error: Delivery Date does not fall within the request date prior range'
+        // )
+    })
     it('Can add supply agreement Documnet', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-
         const transaction = factory.newTransaction('org.catena', 'addSupplyAgreementDocument')
         transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement', '1')
-
 
         transaction.supplyAgreementDocumentHash = 'ABC'
         transaction.supplyAgreementDocumentUrl = 'Thisisaurl'
 
         await businessNetworkConnection.submitTransaction(transaction)
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.SupplyAgreement')
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyAgreement'
+        )
 
         const assets = await assetRegistry.getAll()
 
@@ -353,7 +407,6 @@ describe('#' + namespace, () => {
 
         sa.supplyAgreementDocumentHash.should.equal('ABC')
         sa.supplyAgreementDocumentUrl.should.equal('Thisisaurl')
-
     })
     it('Can add supply chain request to supply agreement', async () => {
         await useIdentity(africoilCardName)
@@ -361,10 +414,12 @@ describe('#' + namespace, () => {
         await createSupplyAgreement()
 
         const transaction = factory.newTransaction('org.catena', 'addSupplyRequest')
-        transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement','1')
+        transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement', '1')
         transaction.supplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
         await businessNetworkConnection.submitTransaction(transaction)
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace +'.SupplyAgreement')
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyAgreement'
+        )
 
         const assets = await assetRegistry.getAll()
 
@@ -411,7 +466,6 @@ describe('#' + namespace, () => {
 
         scr.supplyRequestRecordUrl.should.equal('Thisisaurl')
         scr.supplyRequestRecordHash.should.equal('ABC')
-
     })
 
     it('Can add purchase order docs', async () => {
@@ -435,7 +489,6 @@ describe('#' + namespace, () => {
 
         scr.purchaseOrderUrl.should.equal('Thisisaurl')
         scr.purchaseOrderHash.should.equal('ABC')
-
     })
 
     it('Can add Distibutor invoice docs', async () => {
@@ -459,7 +512,6 @@ describe('#' + namespace, () => {
 
         scr.distributorInvoiceUrl.should.equal('Thisisaurl')
         scr.distributorInvoiceHash.should.equal('ABC')
-
     })
 
     it('Can Create an uplift order', async () => {
@@ -477,9 +529,9 @@ describe('#' + namespace, () => {
 
         uplift.volume.should.equal(10000)
         uplift.supplyRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyRequest#1')
-        uplift.distributor.getFullyQualifiedIdentifier().should.equal(NS +'.Distributor#D001')
-        uplift.manufacturer.getFullyQualifiedIdentifier().should.equal(NS +'.Manufacturer#M001')
-        uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS+'.Transporter#T001')
+        uplift.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
+        uplift.manufacturer.getFullyQualifiedIdentifier().should.equal(NS + '.Manufacturer#M001')
+        uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS + '.Transporter#T001')
         uplift.origin.should.equal('Durban')
         uplift.destination.should.equal('Cape Town')
         uplift.fuelType.should.equal('Petrol')
@@ -489,7 +541,7 @@ describe('#' + namespace, () => {
 
         await createUpliftOrder()
 
-        const transaction = factory.newTransaction(namespace,'addLocationHistory')
+        const transaction = factory.newTransaction(namespace, 'addLocationHistory')
 
         transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
 
@@ -524,7 +576,7 @@ describe('#' + namespace, () => {
 
         let assets = await assetRegistry.getAll()
 
-        let up =  assets[0]
+        let up = assets[0]
 
         up.collectionOrderDocumentHash.should.equal('ABC')
         up.collectionOrderDocumentUrl.should.equal('Thisisaurl')
@@ -554,7 +606,6 @@ describe('#' + namespace, () => {
         up.collectionReceiptDocumentUrl.should.equal('Thisisaurl')
     })
 
-
     it('add manufacturerInvoice', async () => {
         await useIdentity(africoilCardName)
 
@@ -578,7 +629,6 @@ describe('#' + namespace, () => {
         up.manufacturerInvoiceHash.should.equal('ABC')
         up.manufacturerInvoiceUrl.should.equal('Thisisaurl')
     })
-
 
     it('add transportation Invoice', async () => {
         await useIdentity(africoilCardName)
@@ -610,7 +660,7 @@ describe('#' + namespace, () => {
         await createUpliftOrder()
 
         const transaction = factory.newTransaction(namespace, 'confirmCollectionDate')
-        transaction.upliftOrder = factory.newRelationship(namespace,'UpliftOrder', '1')
+        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
 
         await businessNetworkConnection.submitTransaction(transaction)
 
