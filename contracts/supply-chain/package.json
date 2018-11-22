@@ -3,7 +3,7 @@
     "composer": "^0.20.2"
   },
   "name": "supply-chain",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Poc for oil supply chain",
   "scripts": {
     "prepublish": "mkdirp ./dist && composer archive create --sourceType dir --sourceName . -a ./dist/supply-chain.bna",
@@ -15,11 +15,11 @@
     "composer",
     "composer-network"
   ],
-    "husky": {
-      "hooks": {
-        "pre-commit": "npm test"
-      }
-    },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm test"
+    }
+  },
   "author": "Alexander Whiting",
   "email": "alex@catenabloc.com",
   "license": "Apache-2.0",
