@@ -401,3 +401,65 @@ async function addCiceroContract(tx) {
     emit(event)
     return returnValue
 }
+
+/**
+ * Transaction to complete the supply request, and generate cost
+ * @param {org.catena.deliveryCompleted} tx
+ */
+async function deliveryCompleted(tx) {
+    var factory = getFactory()
+
+    let request = factory.newConcept('org.catena', 'DeliveryRequest')
+
+    request.deliveryLocation = tx.deliveryLocation
+    request.deliveryTime = new Date()
+    request.mabt = tx.sr.mabt
+    request.fuelType = tx.fuelType
+    request.volume = tx.volume
+    request.qualitySpecification = tx.qualitySpecification
+
+    let check = factory.newResource(
+        'org.catena',
+        'checkDelivery',
+        tx.transactionId + ':invokeCicero'
+    )
+    check.resourceId = tx.sr.distributor.UserId
+    check.contractId = tx.sr.supplyAgreement.ciceroContractId
+    check.request = request
+
+    let result = await checkDelivery(check)
+
+    let response = result.body.response
+
+    if(response.lateDelivery){
+        tx.sr.requestState = 'LATE'
+        tx.sr.cost = response.price
+        tx.sr.penaltyPercentage = response.penaltyPercentage
+    }else if(response.supplyFailure){
+        tx.sr.requestState = 'FAILED'
+        tx.sr.reasonFailed = 'Supply Failure'
+    } else if (response.specificationFailure) {
+        tx.sr.requestState = 'FAILED'
+        tx.sr.reasonFailed = 'Specification Failure'
+    } else{
+        tx.sr.cost = response.price
+        tx.requestState = 'COMPLETED'
+    }
+
+    const registry = await getAssetRegistry('org.catena.SupplyRequest')
+
+    return registry.update(tx.sr)
+}
+
+/**
+ * Posts to cicero to check if valid delivery and generate costs
+ * @param {org.catena.checkDelivery} tx
+ */
+async function checkDelivery(tx) {
+    let result = await post(
+        'https://txtsfvdocf.execute-api.us-west-2.amazonaws.com/Prod/cicero-service/execute',
+        tx
+    )
+
+    return result
+}

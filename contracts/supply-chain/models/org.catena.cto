@@ -137,6 +137,9 @@ asset SupplyRequest identified by SRID {
   o Boolean supplyConfirmed default=false
   o SupplyRequestState requestState default='CREATED'
   o Location [] locationHistory optional
+  o Double cost optional
+  o String reasonFailed optional
+  o Double penaltyPercentage optional
 
   //Documents
   o String supplyRequestRecordUrl optional
@@ -176,6 +179,28 @@ transaction checkLateSupply {
   o String contractId
   o LateSupplyRequest request
 }
+transaction deliveryCompleted {
+  o String deliveryLocation
+  o String fuelType
+  o String qualitySpecification
+  o String volume
+
+  --> SupplyRequest sr
+}
+transaction checkDelivery {
+  o String resourceId
+  o String contractId
+  o DeliveryRequest request
+}
+concept DeliveryRequest {
+  o String $class default='org.catena.DeliveryRequest'
+  o DateTime deliveryTime
+  o String deliveryLocation
+  o DateTime mabt
+  o String fuelType
+  o Double volume
+  o String qualitySpecification
+}
 concept LateSupplyRequest {
   o String $class default="org.catena.LateSupplyRequest"
   o DateTime requestDate
@@ -185,6 +210,7 @@ enum SupplyRequestState {
   o CREATED
   o CONFIRMED
   o COMPLETED
+  o LATE
   o FAILED
 }
 event SupplyRequestCreated {
