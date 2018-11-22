@@ -267,7 +267,9 @@ describe('#' + namespace, () => {
         transaction.wholesaleListPriceTable = [price]
 
         await businessNetworkConnection.submitTransaction(transaction)
+        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
     }
+
     /**
      * Resusable function to add cicero contract Id
      */
@@ -405,7 +407,7 @@ describe('#' + namespace, () => {
     it('Can add a location history', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
+
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addLocationHistory')
@@ -429,9 +431,9 @@ describe('#' + namespace, () => {
     })
     it('Can add supply chain request to supply agreement', async () => {
         await useIdentity(africoilCardName)
-        await createSupplyRequest()
-        await createSupplyAgreement()
 
+        await createSupplyAgreement()
+        await createSupplyRequest()
         const transaction = factory.newTransaction('org.catena', 'addSupplyRequest')
         transaction.supplyAgreement = factory.newRelationship('org.catena', 'SupplyAgreement', '1')
         transaction.supplyRequest = factory.newRelationship('org.catena', 'SupplyRequest', '1')
@@ -447,7 +449,7 @@ describe('#' + namespace, () => {
     })
     it('Can confirm supply', async () => {
         await useIdentity(africoilCardName)
-
+        await createSupplyAgreement()
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'confirmSupply')
@@ -466,7 +468,7 @@ describe('#' + namespace, () => {
 
     it('Can add supply request  docs', async () => {
         await useIdentity(africoilCardName)
-
+        await createSupplyAgreement()
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addSupplyRequestRecord')
@@ -489,7 +491,7 @@ describe('#' + namespace, () => {
 
     it('Can add purchase order docs', async () => {
         await useIdentity(africoilCardName)
-
+        await createSupplyAgreement()
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addPurchaseOrder')
@@ -512,7 +514,7 @@ describe('#' + namespace, () => {
 
     it('Can add Distibutor invoice docs', async () => {
         await useIdentity(africoilCardName)
-
+        await createSupplyAgreement()
         await createSupplyRequest()
 
         const transaction = factory.newTransaction(namespace, 'addDistributorInvoice')
@@ -532,142 +534,142 @@ describe('#' + namespace, () => {
         scr.distributorInvoiceUrl.should.equal('Thisisaurl')
         scr.distributorInvoiceHash.should.equal('ABC')
     })
+    //TODO: Uncomment when uplift order is intergrated
+    // it('Can Create an uplift order', async () => {
+    //     var NS = 'org.catena'
 
-    it('Can Create an uplift order', async () => {
-        var NS = 'org.catena'
+    //     await useIdentity(africoilCardName)
 
-        await useIdentity(africoilCardName)
+    //     await createUpliftOrder()
 
-        await createUpliftOrder()
+    //     const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
+    //     let assets = await assetRegistry.getAll()
 
-        let assets = await assetRegistry.getAll()
+    //     let uplift = assets[0]
 
-        let uplift = assets[0]
+    //     uplift.volume.should.equal(10000)
+    //     uplift.supplyRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyRequest#1')
+    //     uplift.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
+    //     uplift.manufacturer.getFullyQualifiedIdentifier().should.equal(NS + '.Manufacturer#M001')
+    //     uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS + '.Transporter#T001')
+    //     uplift.origin.should.equal('Durban')
+    //     uplift.destination.should.equal('Cape Town')
+    //     uplift.fuelType.should.equal('Petrol')
+    // })
 
-        uplift.volume.should.equal(10000)
-        uplift.supplyRequest.getFullyQualifiedIdentifier().should.equal(NS + '.SupplyRequest#1')
-        uplift.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
-        uplift.manufacturer.getFullyQualifiedIdentifier().should.equal(NS + '.Manufacturer#M001')
-        uplift.transporter.getFullyQualifiedIdentifier().should.equal(NS + '.Transporter#T001')
-        uplift.origin.should.equal('Durban')
-        uplift.destination.should.equal('Cape Town')
-        uplift.fuelType.should.equal('Petrol')
-    })
+    // it('Can add collection order document', async () => {
+    //     await useIdentity(africoilCardName)
 
-    it('Can add collection order document', async () => {
-        await useIdentity(africoilCardName)
+    //     await createUpliftOrder()
 
-        await createUpliftOrder()
+    //     const transaction = factory.newTransaction(namespace, 'addCollectionOrderDocument')
 
-        const transaction = factory.newTransaction(namespace, 'addCollectionOrderDocument')
+    //     transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
 
-        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
+    //     transaction.collectionOrderDocumentHash = 'ABC'
+    //     transaction.collectionOrderDocumentUrl = 'Thisisaurl'
 
-        transaction.collectionOrderDocumentHash = 'ABC'
-        transaction.collectionOrderDocumentUrl = 'Thisisaurl'
+    //     await businessNetworkConnection.submitTransaction(transaction)
 
-        await businessNetworkConnection.submitTransaction(transaction)
+    //     const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
+    //     let assets = await assetRegistry.getAll()
 
-        let assets = await assetRegistry.getAll()
+    //     let up = assets[0]
 
-        let up = assets[0]
+    //     up.collectionOrderDocumentHash.should.equal('ABC')
+    //     up.collectionOrderDocumentUrl.should.equal('Thisisaurl')
+    // })
 
-        up.collectionOrderDocumentHash.should.equal('ABC')
-        up.collectionOrderDocumentUrl.should.equal('Thisisaurl')
-    })
+    // it('add collection Receipt Document', async () => {
+    //     await useIdentity(africoilCardName)
 
-    it('add collection Receipt Document', async () => {
-        await useIdentity(africoilCardName)
+    //     await createUpliftOrder()
 
-        await createUpliftOrder()
+    //     const transaction = factory.newTransaction(namespace, 'addCollectionReceiptDocument')
 
-        const transaction = factory.newTransaction(namespace, 'addCollectionReceiptDocument')
+    //     transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
 
-        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
+    //     transaction.collectionReceiptDocumentHash = 'ABC'
+    //     transaction.collectionReceiptDocumentUrl = 'Thisisaurl'
 
-        transaction.collectionReceiptDocumentHash = 'ABC'
-        transaction.collectionReceiptDocumentUrl = 'Thisisaurl'
+    //     await businessNetworkConnection.submitTransaction(transaction)
 
-        await businessNetworkConnection.submitTransaction(transaction)
+    //     const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
+    //     let assets = await assetRegistry.getAll()
 
-        let assets = await assetRegistry.getAll()
+    //     let up = assets[0]
 
-        let up = assets[0]
+    //     up.collectionReceiptDocumentHash.should.equal('ABC')
+    //     up.collectionReceiptDocumentUrl.should.equal('Thisisaurl')
+    // })
 
-        up.collectionReceiptDocumentHash.should.equal('ABC')
-        up.collectionReceiptDocumentUrl.should.equal('Thisisaurl')
-    })
+    // it('add manufacturerInvoice', async () => {
+    //     await useIdentity(africoilCardName)
 
-    it('add manufacturerInvoice', async () => {
-        await useIdentity(africoilCardName)
+    //     await createUpliftOrder()
 
-        await createUpliftOrder()
+    //     const transaction = factory.newTransaction(namespace, 'addManufacturerInvoice')
 
-        const transaction = factory.newTransaction(namespace, 'addManufacturerInvoice')
+    //     transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
 
-        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
+    //     transaction.manufacturerInvoiceHash = 'ABC'
+    //     transaction.manufacturerInvoiceUrl = 'Thisisaurl'
 
-        transaction.manufacturerInvoiceHash = 'ABC'
-        transaction.manufacturerInvoiceUrl = 'Thisisaurl'
+    //     await businessNetworkConnection.submitTransaction(transaction)
 
-        await businessNetworkConnection.submitTransaction(transaction)
+    //     const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
+    //     let assets = await assetRegistry.getAll()
 
-        let assets = await assetRegistry.getAll()
+    //     let up = assets[0]
 
-        let up = assets[0]
+    //     up.manufacturerInvoiceHash.should.equal('ABC')
+    //     up.manufacturerInvoiceUrl.should.equal('Thisisaurl')
+    // })
 
-        up.manufacturerInvoiceHash.should.equal('ABC')
-        up.manufacturerInvoiceUrl.should.equal('Thisisaurl')
-    })
+    // it('add transportation Invoice', async () => {
+    //     await useIdentity(africoilCardName)
 
-    it('add transportation Invoice', async () => {
-        await useIdentity(africoilCardName)
+    //     await createUpliftOrder()
 
-        await createUpliftOrder()
+    //     const transaction = factory.newTransaction(namespace, 'addTransportationInvoice')
 
-        const transaction = factory.newTransaction(namespace, 'addTransportationInvoice')
+    //     transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
 
-        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
+    //     transaction.transportationInvoiceHash = 'ABC'
+    //     transaction.transportationInvoiceUrl = 'Thisisaurl'
 
-        transaction.transportationInvoiceHash = 'ABC'
-        transaction.transportationInvoiceUrl = 'Thisisaurl'
+    //     await businessNetworkConnection.submitTransaction(transaction)
 
-        await businessNetworkConnection.submitTransaction(transaction)
+    //     const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
+    //     let assets = await assetRegistry.getAll()
 
-        let assets = await assetRegistry.getAll()
+    //     let up = assets[0]
 
-        let up = assets[0]
+    //     up.transportationInvoiceHash.should.equal('ABC')
+    //     up.transportationInvoiceUrl.should.equal('Thisisaurl')
+    // })
 
-        up.transportationInvoiceHash.should.equal('ABC')
-        up.transportationInvoiceUrl.should.equal('Thisisaurl')
-    })
+    // it('Can confirm collection date', async () => {
+    //     await useIdentity(africoilCardName)
 
-    it('Can confirm collection date', async () => {
-        await useIdentity(africoilCardName)
+    //     await createUpliftOrder()
 
-        await createUpliftOrder()
+    //     const transaction = factory.newTransaction(namespace, 'confirmCollectionDate')
+    //     transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
 
-        const transaction = factory.newTransaction(namespace, 'confirmCollectionDate')
-        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
+    //     await businessNetworkConnection.submitTransaction(transaction)
 
-        await businessNetworkConnection.submitTransaction(transaction)
+    //     const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
 
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
+    //     let assets = await assetRegistry.getAll()
 
-        let assets = await assetRegistry.getAll()
+    //     let up = assets[0]
 
-        let up = assets[0]
-
-        up.collectionDateConfirmed = true
-    })
+    //     up.collectionDateConfirmed = true
+    // })
 })
