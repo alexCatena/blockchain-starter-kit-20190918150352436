@@ -178,7 +178,6 @@ transaction checkLateSupply {
 }
 concept LateSupplyRequest {
   o String $class default="org.catena.LateSupplyRequest"
-  o Integer requestDatePrior
   o DateTime requestDate
   o DateTime deliveryDate
 }

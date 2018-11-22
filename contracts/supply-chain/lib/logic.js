@@ -104,7 +104,6 @@ async function addSupplyAgreementDocument(tx) {
 async function createSupplyRequest(tx) {
     var factory = getFactory()
     let request = factory.newConcept('org.catena', 'LateSupplyRequest')
-    request.requestDatePrior = tx.supplyAgreement.requestDatePrior
     request.requestDate = tx.requestDate
     request.deliveryDate = tx.deliveryDate
 
@@ -118,7 +117,6 @@ async function createSupplyRequest(tx) {
     checkSupply.contractId = tx.supplyAgreement.ciceroContractId
     checkSupply.timestamp = new Date()
     let result = await checkLateSupply(checkSupply)
-
     if (!result.body.response.supplyRequestValid) {
         throw new Error('Delivery Date does not fall within the request date prior range')
     }
@@ -160,6 +158,7 @@ async function checkLateSupply(tx) {
         'https://txtsfvdocf.execute-api.us-west-2.amazonaws.com/Prod/cicero-service/execute',
         tx
     )
+
     return result
 }
 /**

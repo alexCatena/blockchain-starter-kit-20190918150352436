@@ -205,8 +205,8 @@ describe('#' + namespace, () => {
         transaction.fuelType = 'Petrol'
         transaction.qualitySpecification = '14pm'
 
-        transaction.deliveryDate = new Date()
-        transaction.requestDate = new Date()
+        transaction.deliveryDate = new Date('2018-11-20')
+        transaction.requestDate = new Date('2018-11-12')
         transaction.deliveryLocation = 'Durban'
         transaction.supplyAgreement = factory.newRelationship(namespace, 'SupplyAgreement', '1')
         transaction.mabt = new Date()
@@ -267,7 +267,7 @@ describe('#' + namespace, () => {
         transaction.wholesaleListPriceTable = [price]
 
         await businessNetworkConnection.submitTransaction(transaction)
-        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
+        await addCiceroContract('ee331cb2-3221-4739-b14c-15f4ffe68a42')
     }
 
     /**
@@ -344,7 +344,7 @@ describe('#' + namespace, () => {
         var NS = 'org.catena'
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
+        await addCiceroContract('ee331cb2-3221-4739-b14c-15f4ffe68a42')
         await createSupplyRequest()
 
         const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNS)
@@ -360,7 +360,7 @@ describe('#' + namespace, () => {
     it('Reject supply request on requestDatePrior', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
+        await addCiceroContract('ee331cb2-3221-4739-b14c-15f4ffe68a42')
         const transaction = factory.newTransaction(namespace, 'createSupplyRequest')
         transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
         transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
@@ -368,19 +368,24 @@ describe('#' + namespace, () => {
         transaction.fuelType = 'Petrol'
         transaction.qualitySpecification = '14pm'
 
-        transaction.deliveryDate = new Date('2018-11-7')
-        transaction.requestDate = new Date('2018-11-6')
+        transaction.deliveryDate = new Date('2018-11-6')
+        transaction.requestDate = new Date('2018-11-5')
         transaction.deliveryLocation = 'Durban'
         transaction.supplyAgreement = factory.newRelationship(namespace, 'SupplyAgreement', '1')
         transaction.mabt = new Date()
 
-        await businessNetworkConnection.submitTransaction(transaction).catch(err => {
-            err.should.exist
-            err.should.be.an.instanceOf(Error)
-            err.message.should.equal(
-                'Delivery Date does not fall within the request date prior range'
-            )
-        })
+        await businessNetworkConnection
+            .submitTransaction(transaction)
+            .then(data => {
+                data.should.be.an.instanceOf(Error)
+            })
+            .catch(err => {
+                err.should.exist
+                err.should.be.an.instanceOf(Error)
+                err.message.should.equal(
+                    'Delivery Date does not fall within the request date prior range'
+                )
+            })
     })
     it('Can add supply agreement Documnet', async () => {
         await useIdentity(africoilCardName)
