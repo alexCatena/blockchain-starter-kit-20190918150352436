@@ -136,6 +136,7 @@ asset SupplyRequest identified by SRID {
   o String deliveryLocation
   o Boolean supplyConfirmed default=false
   o SupplyRequestState requestState default='CREATED'
+  o Location [] locationHistory optional
 
   //Documents
   o String supplyRequestRecordUrl optional
@@ -193,7 +194,11 @@ event SupplyRequestCreated {
 transaction confirmSupply {
   --> SupplyRequest sr
 }
-
+transaction addLocationHistory {
+  --> SupplyRequest sr
+  o Double longitude
+  o Double latitude
+}
 transaction addSupplyRequestRecord {
   --> SupplyRequest sr
   o String supplyRequestRecordHash
@@ -277,11 +282,7 @@ transaction createUpliftOrder {
 
 }
 
-transaction addLocationHistory {
-  --> UpliftOrder upliftOrder
-  o Double longitude
-  o Double latitude
-}
+
 
 transaction addCollectionOrderDocument {
   --> UpliftOrder upliftOrder

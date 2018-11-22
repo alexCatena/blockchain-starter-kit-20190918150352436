@@ -264,7 +264,7 @@ async function createUpliftOrder(tx) {
  * @transaction
  */
 async function addLocationHistory(tx) {
-    var NS = 'org.catena.UpliftOrder'
+    var NS = 'org.catena.SupplyRequest'
     var factory = getFactory()
 
     const registry = await getAssetRegistry(NS)
@@ -273,13 +273,13 @@ async function addLocationHistory(tx) {
     location.longitude = tx.longitude
     location.latitude = tx.latitude
 
-    if (typeof tx.upliftOrder.locationHistory === 'undefined') {
-        tx.upliftOrder.locationHistory = [location]
+    if (typeof tx.sr.locationHistory === 'undefined') {
+        tx.sr.locationHistory = [location]
     } else {
-        tx.upliftOrder.locationHistory = [...tx.upliftOrder.locationHistory, location]
+        tx.sr.locationHistory = [...tx.sr.locationHistory, location]
     }
 
-    await registry.update(tx.upliftOrder)
+    await registry.update(tx.sr)
 }
 
 /**

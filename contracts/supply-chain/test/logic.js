@@ -355,7 +355,7 @@ describe('#' + namespace, () => {
         scr.distributor.getFullyQualifiedIdentifier().should.equal(NS + '.Distributor#D001')
         scr.customer.getFullyQualifiedIdentifier().should.equal(NS + '.Customer#C001')
     })
-    it.only('Reject supply request on requestDatePrior', async () => {
+    it('Reject supply request on requestDatePrior', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
         await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
@@ -379,12 +379,6 @@ describe('#' + namespace, () => {
                 'Delivery Date does not fall within the request date prior range'
             )
         })
-
-        // console.log(result)
-
-        // result.should.equal(
-        //     'Error: Delivery Date does not fall within the request date prior range'
-        // )
     })
     it('Can add supply agreement Documnet', async () => {
         await useIdentity(africoilCardName)
@@ -407,6 +401,31 @@ describe('#' + namespace, () => {
 
         sa.supplyAgreementDocumentHash.should.equal('ABC')
         sa.supplyAgreementDocumentUrl.should.equal('Thisisaurl')
+    })
+    it('Can add a location history', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await addCiceroContract('852d46b1-b39a-4697-8db5-10e8d6906683')
+        await createSupplyRequest()
+
+        const transaction = factory.newTransaction(namespace, 'addLocationHistory')
+
+        transaction.sr = factory.newRelationship(namespace, 'SupplyRequest', '1')
+
+        transaction.longitude = 34.22
+        transaction.latitude = 32.22
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            'org.catena.SupplyRequest'
+        )
+
+        let assets = await assetRegistry.getAll()
+
+        let sr = assets[0]
+
+        sr.locationHistory.length.should.equal(1)
     })
     it('Can add supply chain request to supply agreement', async () => {
         await useIdentity(africoilCardName)
@@ -536,28 +555,7 @@ describe('#' + namespace, () => {
         uplift.destination.should.equal('Cape Town')
         uplift.fuelType.should.equal('Petrol')
     })
-    it('Can add a location history', async () => {
-        await useIdentity(africoilCardName)
 
-        await createUpliftOrder()
-
-        const transaction = factory.newTransaction(namespace, 'addLocationHistory')
-
-        transaction.upliftOrder = factory.newRelationship(namespace, 'UpliftOrder', '1')
-
-        transaction.longitude = 34.22
-        transaction.latitude = 32.22
-
-        await businessNetworkConnection.submitTransaction(transaction)
-
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNSUp)
-
-        let assets = await assetRegistry.getAll()
-
-        let up = assets[0]
-
-        up.locationHistory.length.should.equal(1)
-    })
     it('Can add collection order document', async () => {
         await useIdentity(africoilCardName)
 
