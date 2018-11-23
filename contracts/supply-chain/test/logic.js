@@ -43,7 +43,7 @@ const participantNSMan = namespace + '.' + participantTypeMan
 
 const participantTypeCust = 'Customer'
 const participantNSCust = namespace + '.' + participantTypeCust
-
+const contractId = 'e30f2392-5fd5-4658-8bc1-017836e467b0'
 describe('#' + namespace, () => {
     // In-memory card store for testing so cards are not persisted to the file system
     const cardStore = require('composer-common').NetworkCardStoreManager.getCardStore({
@@ -196,8 +196,15 @@ describe('#' + namespace, () => {
     }
     /**
      * Funtion to be reused to create a supply chain request at the beginning of tests
+     * @param {String} requestDate
+     * @param {String} deliveryDate
+     * @param {String} mabt
      */
-    async function createSupplyRequest() {
+    async function createSupplyRequest(
+        requestDate = '2018-11-12',
+        deliveryDate = '2018-11-20',
+        mabt = '17:00'
+    ) {
         const transaction = factory.newTransaction(namespace, 'createSupplyRequest')
         transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
         transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
@@ -205,11 +212,12 @@ describe('#' + namespace, () => {
         transaction.fuelType = 'Petrol'
         transaction.qualitySpecification = '14pm'
 
-        transaction.deliveryDate = new Date('2018-11-20')
-        transaction.requestDate = new Date('2018-11-12')
+        transaction.deliveryDate = new Date(deliveryDate)
+        transaction.requestDate = new Date(requestDate)
         transaction.deliveryLocation = 'Durban'
         transaction.supplyAgreement = factory.newRelationship(namespace, 'SupplyAgreement', '1')
-        transaction.mabt = new Date()
+        let tempMabt = deliveryDate + 'T' + mabt
+        transaction.mabt = new Date(tempMabt)
 
         await businessNetworkConnection.submitTransaction(transaction)
     }
@@ -267,7 +275,7 @@ describe('#' + namespace, () => {
         transaction.wholesaleListPriceTable = [price]
 
         await businessNetworkConnection.submitTransaction(transaction)
-        await addCiceroContract('ee331cb2-3221-4739-b14c-15f4ffe68a42')
+        await addCiceroContract(contractId)
     }
 
     /**
@@ -344,7 +352,7 @@ describe('#' + namespace, () => {
         var NS = 'org.catena'
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await addCiceroContract('ee331cb2-3221-4739-b14c-15f4ffe68a42')
+        await addCiceroContract(contractId)
         await createSupplyRequest()
 
         const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNS)
@@ -360,7 +368,7 @@ describe('#' + namespace, () => {
     it('Reject supply request on requestDatePrior', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await addCiceroContract('ee331cb2-3221-4739-b14c-15f4ffe68a42')
+        await addCiceroContract(contractId)
         const transaction = factory.newTransaction(namespace, 'createSupplyRequest')
         transaction.customer = factory.newRelationship(namespace, 'Customer', 'C001')
         transaction.distributor = factory.newRelationship(namespace, 'Distributor', 'D001')
@@ -386,6 +394,94 @@ describe('#' + namespace, () => {
                     'Delivery Date does not fall within the request date prior range'
                 )
             })
+    })
+    it('Get cost on delivery request', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await createSupplyRequest('2018-11-12', '2018-11-23')
+
+        const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
+        transaction.deliveryLocation = '01A'
+        transaction.fuelType = 'Diesel 0.05%'
+        transaction.qualitySpecification = 'SANS 342:2006'
+        transaction.volume = 80000
+        transaction.sr = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyRequest'
+        )
+
+        const asset = await assetRegistry.get('1')
+
+        asset.requestState.should.equal('COMPLETED')
+    })
+    it('Fails supply on delivery time', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await createSupplyRequest('2018-11-12', '2018-11-22', '10:00')
+
+        const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
+        transaction.deliveryLocation = '01A'
+        transaction.fuelType = 'Diesel 0.05%'
+        transaction.qualitySpecification = 'SANS 342:2016'
+        transaction.volume = 80000
+        transaction.sr = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyRequest'
+        )
+
+        const asset = await assetRegistry.get('1')
+
+        asset.requestState.should.equal('FAILED')
+    })
+    it('Fails supply on specification failure', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await createSupplyRequest('2018-11-12', '2018-11-23')
+
+        const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
+        transaction.deliveryLocation = '01A'
+        transaction.fuelType = 'Diesel 0.05%'
+        transaction.qualitySpecification = 'SANS 342:2016'
+        transaction.volume = 80000
+        transaction.sr = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyRequest'
+        )
+
+        const asset = await assetRegistry.get('1')
+
+        asset.requestState.should.equal('FAILED')
+    })
+    it('Supply is late', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await createSupplyRequest('2018-11-12', '2018-11-23', '08:00')
+
+        const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
+        transaction.deliveryLocation = '01A'
+        transaction.fuelType = 'Diesel 0.05%'
+        transaction.qualitySpecification = 'SANS 342:2006'
+        transaction.volume = 80000
+        transaction.sr = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyRequest'
+        )
+
+        const asset = await assetRegistry.get('1')
+
+        asset.requestState.should.equal('LATE')
     })
     it('Can add supply agreement Documnet', async () => {
         await useIdentity(africoilCardName)

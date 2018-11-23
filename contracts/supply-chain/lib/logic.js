@@ -405,6 +405,7 @@ async function addCiceroContract(tx) {
 /**
  * Transaction to complete the supply request, and generate cost
  * @param {org.catena.deliveryCompleted} tx
+ * @transaction
  */
 async function deliveryCompleted(tx) {
     var factory = getFactory()
@@ -423,27 +424,26 @@ async function deliveryCompleted(tx) {
         'checkDelivery',
         tx.transactionId + ':invokeCicero'
     )
+    check.timestamp = new Date()
     check.resourceId = tx.sr.distributor.UserId
     check.contractId = tx.sr.supplyAgreement.ciceroContractId
     check.request = request
 
     let result = await checkDelivery(check)
-
     let response = result.body.response
-
-    if(response.lateDelivery){
+    if (response.lateDelivery) {
         tx.sr.requestState = 'LATE'
         tx.sr.cost = response.price
         tx.sr.penaltyPercentage = response.penaltyPercentage
-    }else if(response.supplyFailure){
+    } else if (response.supplyFailure) {
         tx.sr.requestState = 'FAILED'
         tx.sr.reasonFailed = 'Supply Failure'
     } else if (response.specificationFailure) {
         tx.sr.requestState = 'FAILED'
         tx.sr.reasonFailed = 'Specification Failure'
-    } else{
+    } else {
         tx.sr.cost = response.price
-        tx.requestState = 'COMPLETED'
+        tx.sr.requestState = 'COMPLETED'
     }
 
     const registry = await getAssetRegistry('org.catena.SupplyRequest')
@@ -460,6 +460,5 @@ async function checkDelivery(tx) {
         'https://txtsfvdocf.execute-api.us-west-2.amazonaws.com/Prod/cicero-service/execute',
         tx
     )
-
     return result
 }

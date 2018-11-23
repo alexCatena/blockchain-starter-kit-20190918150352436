@@ -183,7 +183,7 @@ transaction deliveryCompleted {
   o String deliveryLocation
   o String fuelType
   o String qualitySpecification
-  o String volume
+  o Double volume
 
   --> SupplyRequest sr
 }
