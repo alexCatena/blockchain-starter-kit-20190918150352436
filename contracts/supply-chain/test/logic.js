@@ -155,9 +155,21 @@ describe('#' + namespace, () => {
         const manu = factory.newResource(namespace, participantTypeMan, 'M001')
         const trans = factory.newResource(namespace, participantTypeTrans, 'T001')
         africoil.name = 'test'
+        africoil.phoneNumber = 'balh'
+        africoil.email = 'email'
+        africoil.address = 'test'
         cust.name = 'test'
+        cust.phoneNumber = 'lasdf'
+        cust.email = 'email'
+        cust.address = 'adress'
         manu.name = 'test'
+        manu.phoneNumber = 'blah'
+        manu.email = 'email'
+        manu.address = 'address'
         trans.name = 'test'
+        trans.phoneNumber = 'b;ha'
+        trans.email = 'email'
+        trans.address = 'address'
         await participantRegistry.addAll([africoil, cust, manu, trans])
 
         // const assetRegistry = await businessNetworkConnection.getAssetRegistry(assetNS)
@@ -398,7 +410,7 @@ describe('#' + namespace, () => {
     it('Get cost on delivery request', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await createSupplyRequest('2018-11-12', '2018-11-23')
+        await createSupplyRequest('2018-11-12', '2018-11-27')
 
         const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
         transaction.deliveryLocation = '01A'
