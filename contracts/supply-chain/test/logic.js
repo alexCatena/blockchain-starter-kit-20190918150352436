@@ -43,7 +43,7 @@ const participantNSMan = namespace + '.' + participantTypeMan
 
 const participantTypeCust = 'Customer'
 const participantNSCust = namespace + '.' + participantTypeCust
-const contractId = 'e30f2392-5fd5-4658-8bc1-017836e467b0'
+const contractId = '344b04d2-aca8-4deb-9ec6-eebfa0f70626'
 describe('#' + namespace, () => {
     // In-memory card store for testing so cards are not persisted to the file system
     const cardStore = require('composer-common').NetworkCardStoreManager.getCardStore({
@@ -410,7 +410,7 @@ describe('#' + namespace, () => {
     it('Get cost on delivery request', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await createSupplyRequest('2018-11-12', '2018-11-27')
+        await createSupplyRequest('2018-11-12', '2018-12-04')
 
         const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
         transaction.deliveryLocation = '01A'

@@ -138,6 +138,7 @@ asset SupplyRequest identified by SRID {
   o SupplyRequestState requestState default='CREATED'
   o Location [] locationHistory optional
   o Double cost optional
+  o Double pricePerLitre optional
   o String reasonFailed optional
   o Double penaltyPercentage optional
 

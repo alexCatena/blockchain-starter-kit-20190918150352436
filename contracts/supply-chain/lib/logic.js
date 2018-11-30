@@ -431,19 +431,26 @@ async function deliveryCompleted(tx) {
 
     let result = await checkDelivery(check)
     let response = result.body.response
+
     if (response.lateDelivery) {
         tx.sr.requestState = 'LATE'
         tx.sr.cost = response.price
         tx.sr.penaltyPercentage = response.penaltyPercentage
+        tx.sr.deliveryTime = new Date()
+        tx.sr.pricePerLitre = response.pricePerLitre
     } else if (response.supplyFailure) {
         tx.sr.requestState = 'FAILED'
         tx.sr.reasonFailed = 'Supply Failure'
     } else if (response.specificationFailure) {
         tx.sr.requestState = 'FAILED'
         tx.sr.reasonFailed = 'Specification Failure'
+        tx.sr.deliveryTime = new Date()
+        tx.sr.pricePerLitre = response.pricePerLitre
     } else {
         tx.sr.cost = response.price
         tx.sr.requestState = 'COMPLETED'
+        tx.sr.deliveryTime = new Date()
+        tx.sr.pricePerLitre = response.pricePerLitre
     }
 
     const registry = await getAssetRegistry('org.catena.SupplyRequest')
