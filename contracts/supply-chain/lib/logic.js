@@ -469,3 +469,41 @@ async function checkDelivery(tx) {
     )
     return result
 }
+/**
+ * Query to get asset history
+ * @param {org.catena.getAssetHistory} tx
+ * @transaction
+ */
+async function getAssetHistory(tx) {
+    const id = tx.assetId
+
+    const nativeKey = getNativeAPI().createCompositeKey(
+        'Asset:systest.transactions.' + tx.assetType,
+        [id]
+    )
+    console.log(nativeKey)
+    const iterator = await getNativeAPI().getHistoryForKey(nativeKey)
+    let pay = {}
+    let results = []
+    let res = { done: false }
+    while (!res.done) {
+        res = await iterator.next()
+
+        if (res && res.value && res.value.value) {
+            console.log(res.value)
+            let val = res.value.value.toString('utf8')
+            if (val.length > 0) {
+                results.push(JSON.parse(val))
+            }
+        }
+        if (res && res.done) {
+            try {
+                iterator.close()
+            } catch (err) {
+                console.log(err)
+            }
+        }
+    }
+    pay.results = results
+    return JSON.stringify(pay)
+}

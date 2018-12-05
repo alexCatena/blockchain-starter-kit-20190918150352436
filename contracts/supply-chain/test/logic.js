@@ -21,7 +21,7 @@ const AdminConnection = require('composer-admin').AdminConnection
 const BusinessNetworkConnection = require('composer-client').BusinessNetworkConnection
 const { BusinessNetworkDefinition, CertificateUtil, IdCard } = require('composer-common')
 const path = require('path')
-
+const moment = require('moment')
 const chai = require('chai')
 chai.should()
 chai.use(require('chai-as-promised'))
@@ -410,7 +410,7 @@ describe('#' + namespace, () => {
     it('Get cost on delivery request', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await createSupplyRequest('2018-11-12', '2018-12-04')
+        await createSupplyRequest('2018-11-12', '2019-12-04')
 
         const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
         transaction.deliveryLocation = '01A'
@@ -476,7 +476,8 @@ describe('#' + namespace, () => {
     it('Supply is late', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()
-        await createSupplyRequest('2018-11-12', '2018-11-23', '08:00')
+        let date = moment().format('YYYY-MM-DD')
+        await createSupplyRequest('2018-11-12', date, '08:00')
 
         const transaction = factory.newTransaction('org.catena', 'deliveryCompleted')
         transaction.deliveryLocation = '01A'
@@ -647,6 +648,17 @@ describe('#' + namespace, () => {
         scr.distributorInvoiceUrl.should.equal('Thisisaurl')
         scr.distributorInvoiceHash.should.equal('ABC')
     })
+    // it.only('Can get asset history', async () => {
+    //     await useIdentity(africoilCardName)
+    //     await createSupplyAgreement()
+    //     await createSupplyRequest()
+
+    //     const transaction = factory.newTransaction(namespace, 'getAssetHistory')
+    //     transaction.assetId = '1'
+    //     transaction.assetType = 'SupplyRequest'
+
+    //     await businessNetworkConnection.submitTransaction(transaction)
+    // })
     //TODO: Uncomment when uplift order is intergrated
     // it('Can Create an uplift order', async () => {
     //     var NS = 'org.catena'

@@ -3,7 +3,7 @@
     "composer": "^0.20.2"
   },
   "name": "supply-chain",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Poc for oil supply chain",
   "scripts": {
     "prepublish": "mkdirp ./dist && composer archive create --sourceType dir --sourceName . -a ./dist/supply-chain.bna",

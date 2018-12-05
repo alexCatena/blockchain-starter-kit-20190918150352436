@@ -365,3 +365,12 @@ participant Manufacturer extends User {
 participant Transporter extends User {
 
 }
+concept History {
+  o String HIistory
+}
+@commit(false)
+@returns(String)
+transaction getAssetHistory {
+  o String assetId
+  o String assetType
+}
