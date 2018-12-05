@@ -477,10 +477,7 @@ async function checkDelivery(tx) {
 async function getAssetHistory(tx) {
     const id = tx.assetId
 
-    const nativeKey = getNativeAPI().createCompositeKey(
-        'Asset:systest.transactions.' + tx.assetType,
-        [id]
-    )
+    const nativeKey = getNativeAPI().createCompositeKey('Asset:org.catena.' + tx.assetType, [id])
     console.log(nativeKey)
     const iterator = await getNativeAPI().getHistoryForKey(nativeKey)
     let pay = {}
