@@ -510,11 +510,12 @@ async function getAssetHistory(tx) {
         res = await iterator.next()
 
         if (res && res.value && res.value.value) {
-            console.log('Value',res.value.toString('utf8'))
+            console.log('TxId', res.value.tx_id.toString('utf8'))
+            console.log('Timestamp', res.value.timestamp.toString('utf8'))
+            console.log('Value', res.value.toString('utf8'))
             let val = res.value.value.toString('utf8')
             console.log('Value.Value', val)
             if (val.length > 0) {
-
                 results.push(JSON.parse(val))
             }
         }
