@@ -75,9 +75,10 @@ async function createSupplyAgreement(tx) {
     await registry.add(sr)
 
     let event = factory.newEvent('org.catena', 'SupplyAgreementCreated')
-    event.SAID = SAID
+    event.assetType = 'SupplyAgreement'
+    event.id = SAID
     event.customer = tx.customer
-
+    event.distributor = tx.distributor
     emit(event)
 }
 /**
@@ -92,8 +93,11 @@ async function addSupplyAgreementDocument(tx) {
 
     tx.supplyAgreement.supplyAgreementDocumentHash = tx.supplyAgreementDocumentHash
     tx.supplyAgreement.supplyAgreementDocumentUrl = tx.supplyAgreementDocumentUrl
-
+    let event = getFactory().newEvent('org.catena', 'SupplyAgreementDocumentAdded')
+    event.assetType = 'SupplyAgreement'
+    event.id = tx.supplyAgreement.SAID
     await registry.update(tx.supplyAgreement)
+    emit(event)
 }
 
 /**
@@ -144,7 +148,8 @@ async function createSupplyRequest(tx) {
     await registry.add(sr)
 
     let event = factory.newEvent('org.catena', 'SupplyRequestCreated')
-    event.SRID = SRID
+    event.assetType = 'SupplyRequest'
+    event.id = SRID
 
     emit(event)
 }
@@ -158,7 +163,11 @@ async function checkLateSupply(tx) {
         'https://txtsfvdocf.execute-api.us-west-2.amazonaws.com/Prod/cicero-service/execute',
         tx
     )
-
+    let factory = getFactory()
+    let event = factory.newEvent('org.catena', 'LateSupplyCheck')
+    event.assetType = 'SupplyRequest'
+    event.id = 'None'
+    event.result = JSON.stringify(result)
     return result
 }
 /**
@@ -188,7 +197,6 @@ async function addSupplyRequestRecord(tx) {
 
     tx.sr.supplyRequestRecordHash = tx.supplyRequestRecordHash
     tx.sr.supplyRequestRecordUrl = tx.supplyRequestRecordUrl
-
     await registry.update(tx.sr)
 }
 
@@ -219,43 +227,48 @@ async function addDistributorInvoice(tx) {
 
     tx.sr.distributorInvoiceHash = tx.distributorInvoiceHash
     tx.sr.distributorInvoiceUrl = tx.distributorInvoiceUrl
+
+    let event = getFactory().newEvent('org.catena', 'DistributorInvoiceAdded')
+    event.assetType = 'SupplyRequest'
+    event.id = tx.sr.SRID
     await registry.update(tx.sr)
+    emit(event)
 }
 
-/**
- * Create Uplift Order transaction
- * @param {org.catena.createUpliftOrder} tx
- * @transaction
- */
-async function createUpliftOrder(tx) {
-    const registry = await getAssetRegistry('org.catena.UpliftOrder')
+// /**
+//  * Create Uplift Order transaction
+//  * @param {org.catena.createUpliftOrder} tx
+//  * @transaction
+//  */
+// async function createUpliftOrder(tx) {
+//     const registry = await getAssetRegistry('org.catena.UpliftOrder')
 
-    var factory = getFactory()
+//     var factory = getFactory()
 
-    var NS = 'org.catena'
+//     var NS = 'org.catena'
 
-    var assets = await registry.getAll()
+//     var assets = await registry.getAll()
 
-    var UOID = (assets.length + 1).toString()
+//     var UOID = (assets.length + 1).toString()
 
-    var uplift = factory.newResource(NS, 'UpliftOrder', UOID)
+//     var uplift = factory.newResource(NS, 'UpliftOrder', UOID)
 
-    uplift.pickupTime = tx.pickupTime
-    uplift.mabd = tx.mabd
-    uplift.volume = tx.volume
-    uplift.origin = tx.origin
-    uplift.destination = tx.destination
-    uplift.qualitySpecification = tx.qualitySpecification
-    uplift.fuelType = tx.fuelType
-    uplift.transportCompany = tx.transportCompany
+//     uplift.pickupTime = tx.pickupTime
+//     uplift.mabd = tx.mabd
+//     uplift.volume = tx.volume
+//     uplift.origin = tx.origin
+//     uplift.destination = tx.destination
+//     uplift.qualitySpecification = tx.qualitySpecification
+//     uplift.fuelType = tx.fuelType
+//     uplift.transportCompany = tx.transportCompany
 
-    uplift.supplyRequest = tx.supplyRequest
-    uplift.distributor = tx.distributor
-    uplift.manufacturer = tx.manufacturer
-    uplift.transporter = tx.transporter
+//     uplift.supplyRequest = tx.supplyRequest
+//     uplift.distributor = tx.distributor
+//     uplift.manufacturer = tx.manufacturer
+//     uplift.transporter = tx.transporter
 
-    return registry.add(uplift)
-}
+//     return registry.add(uplift)
+// }
 
 /**
  * Add location history
@@ -277,8 +290,11 @@ async function addLocationHistory(tx) {
     } else {
         tx.sr.locationHistory = [...tx.sr.locationHistory, location]
     }
-
+    let event = factory.newEvent('org.catena', 'LocationAdded')
+    event.assetType = 'SupplyRequest'
+    event.id = tx.sr.SRID
     await registry.update(tx.sr)
+    emit(event)
 }
 
 /**
@@ -376,8 +392,8 @@ async function addSupplyRequest(tx) {
     await registry.update(tx.supplyAgreement)
 
     let event = getFactory().newEvent('org.catena', 'SupplyRequestAdded')
-
-    event.SAID = tx.supplyAgreement.SAID
+    event.assetType = 'SupplyAgreement'
+    event.id = tx.supplyAgreement.SAID
     event.SRID = tx.supplyRequest.SRID
 
     emit(event)
@@ -395,9 +411,9 @@ async function addCiceroContract(tx) {
     let returnValue = await registry.update(tx.supplyAgreement)
 
     let event = getFactory().newEvent('org.catena', 'CiceroContractAdded')
-    event.SAID = tx.supplyAgreement.SAID
+    event.assetType = 'SupplyAgreement'
+    event.id = tx.supplyAgreement.SAID
     event.status = 'ACTIVE'
-    event.message = 'Agreement successfully activated.'
     emit(event)
     return returnValue
 }
@@ -454,7 +470,10 @@ async function deliveryCompleted(tx) {
     }
 
     const registry = await getAssetRegistry('org.catena.SupplyRequest')
-
+    let event = factory.newEvent('org.catena', 'DeliveryCompleted')
+    event.assetType = 'SupplyRequest'
+    event.id = tx.sr.SRID
+    emit(event)
     return registry.update(tx.sr)
 }
 
@@ -467,6 +486,10 @@ async function checkDelivery(tx) {
         'https://txtsfvdocf.execute-api.us-west-2.amazonaws.com/Prod/cicero-service/execute',
         tx
     )
+    let event = getFactory().newEvent('org.catena', 'CheckDelivery')
+    event.assetType = 'SupplyRequest'
+    event.id = 'None'
+    emit(event)
     return result
 }
 /**

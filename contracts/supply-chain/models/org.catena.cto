@@ -18,6 +18,11 @@
 
 namespace org.catena
 
+event BaseEvent {
+  o String assetType
+  o String id
+}
+
 asset SupplyAgreement identified by SAID {
   o String SAID
   o DateTime effectiveDate
@@ -66,10 +71,17 @@ transaction createSupplyAgreement {
   --> Customer customer
   --> Distributor distributor
 }
+event SupplyAgreementCreated extends BaseEvent {
+  --> Customer customer
+  --> Distributor distributor
+}
 transaction addSupplyAgreementDocument {
   o String supplyAgreementDocumentHash
   o String supplyAgreementDocumentUrl
   --> SupplyAgreement supplyAgreement
+}
+event SupplyAgreementDocumentAdded extends BaseEvent{
+
 }
 enum SupplyAgreementState {
   o DRAFT
@@ -78,18 +90,14 @@ enum SupplyAgreementState {
   o CANCELD
 }
 
-event SupplyAgreementCreated {
-  o String SAID
-  --> Customer customer
-}
+
 
 transaction addSupplyRequest {
   --> SupplyAgreement supplyAgreement
   --> SupplyRequest supplyRequest
 }
 
-event SupplyRequestAdded{
-  o String SAID
+event SupplyRequestAdded extends BaseEvent{
   o String SRID
 }
 
@@ -98,10 +106,8 @@ transaction addCiceroContract {
   o String ciceroContractId
 }
 
-event CiceroContractAdded {
-  o String SAID
+event CiceroContractAdded extends BaseEvent{
   o SupplyAgreementState status
-  o String message
 }
 concept Site {
   o String site
@@ -174,11 +180,15 @@ transaction createSupplyRequest {
   --> Customer customer
   --> Distributor distributor
 }
-
+event SupplyRequestCreated extends BaseEvent{
+}
 transaction checkLateSupply {
   o String resourceId
   o String contractId
   o LateSupplyRequest request
+}
+event LateSupplyCheck {
+  o String result
 }
 transaction deliveryCompleted {
   o String deliveryLocation
@@ -188,10 +198,16 @@ transaction deliveryCompleted {
 
   --> SupplyRequest sr
 }
+event DeliveryCompleted extends BaseEvent{
+}
 transaction checkDelivery {
   o String resourceId
   o String contractId
   o DeliveryRequest request
+}
+
+event CheckDelivery extends BaseEvent {
+
 }
 concept DeliveryRequest {
   o String $class default='org.catena.DeliveryRequest'
@@ -214,16 +230,18 @@ enum SupplyRequestState {
   o LATE
   o FAILED
 }
-event SupplyRequestCreated {
-  o String SRID
-}
+
 transaction confirmSupply {
   --> SupplyRequest sr
 }
+
 transaction addLocationHistory {
   --> SupplyRequest sr
   o Double longitude
   o Double latitude
+}
+event LocationAdded extends BaseEvent {
+
 }
 transaction addSupplyRequestRecord {
   --> SupplyRequest sr
@@ -241,6 +259,9 @@ transaction addDistributorInvoice {
   --> SupplyRequest sr
   o String distributorInvoiceHash
   o String distributorInvoiceUrl
+}
+
+event DistributorInvoiceAdded extends BaseEvent {
 }
 
 transaction addMeterSlip {
