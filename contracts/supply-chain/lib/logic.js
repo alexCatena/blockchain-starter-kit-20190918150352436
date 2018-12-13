@@ -511,8 +511,8 @@ async function getAssetHistory(tx) {
 
         if (res && res.value && res.value.value) {
             console.log('TxId', res.value.tx_id.toString('utf8'))
-            console.log('Timestamp Seconds', res.value.timestamp.seconds.toString('utf8'))
-            console.log('Timestamp Nano', res.value.timestamp.nano.toString('utf8'))
+            console.log('Timestamp Seconds', res.value.timestamp.seconds)
+            console.log('Timestamp Nano', res.value.timestamp.nanos)
             console.log('Value', res.value.toString('utf8'))
             let val = res.value.value.toString('utf8')
             console.log('Value.Value', val)
