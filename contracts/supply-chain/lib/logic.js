@@ -524,8 +524,8 @@ async function getAssetHistory(tx) {
                 let fin = JSON.parse(val)
                 fin.tx_id = res.value.tx_id.toString('utf8')
                 fin.timestamp = date
-                console.log('Item', fin)
-                results.push(JSON.parse(val))
+                // console.log('Item', fin)
+                results.push(fin)
             }
         }
         if (res && res.done) {
