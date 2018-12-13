@@ -510,16 +510,21 @@ async function getAssetHistory(tx) {
         res = await iterator.next()
 
         if (res && res.value && res.value.value) {
-            console.log('TxId', res.value.tx_id.toString('utf8'))
-            console.log('Timestamp Seconds', res.value.timestamp.seconds)
+            // console.log('TxId', res.value.tx_id.toString('utf8'))
+            // console.log('Timestamp Seconds', res.value.timestamp.seconds)
             let date = new Date(0)
             date.setUTCSeconds(res.value.timestamp.seconds.low)
+            date.setUTCMilliseconds(res.value.timestamp.nanos / 1000000)
             console.log('Seconds date', date)
-            console.log('Timestamp Nano', res.value.timestamp.nanos)
-            console.log('Value', res.value.toString('utf8'))
+            // console.log('Timestamp Nano', res.value.timestamp.nanos)
+            // console.log('Value', res.value.toString('utf8'))
             let val = res.value.value.toString('utf8')
-            console.log('Value.Value', val)
+            // console.log('Value.Value', val)
             if (val.length > 0) {
+                let fin = JSON.parse(val)
+                fin.tx_id = res.value.tx_id.toString('utf8')
+                fin.timestamp = date
+                console.log('Item', fin)
                 results.push(JSON.parse(val))
             }
         }
