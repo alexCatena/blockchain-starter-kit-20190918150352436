@@ -407,7 +407,6 @@ async function addCiceroContract(tx) {
     const registry = await getAssetRegistry('org.catena.SupplyAgreement')
 
     tx.supplyAgreement.ciceroContractId = tx.ciceroContractId
-    tx.supplyAgreement.agreementState = 'ACTIVE'
     let returnValue = await registry.update(tx.supplyAgreement)
 
     let event = getFactory().newEvent('org.catena', 'CiceroContractAdded')
@@ -538,4 +537,33 @@ async function getAssetHistory(tx) {
     }
     pay.results = results
     return JSON.stringify(pay)
+}
+
+/**
+ * Transaction to sign supply agreement
+ * @param {org.catena.signSupplyAgreement} tx
+ * @transaction
+ */
+async function signSupplyAgreement(tx) {
+    if (tx.custOrDist === 'Customer') {
+        tx.supplyAgreement.customerSigned = true
+    } else if (tx.custOrDist === 'Distributor') {
+        tx.supplyAgreement.distributorSigned = true
+    } else {
+        throw new Error('Entity must be Customer or Distributor')
+    }
+
+    if (tx.supplyAgreement.customerSigned && tx.supplyAgreement.distributorSigned) {
+        tx.supplyAgreement.agreementState = 'ACTIVE'
+    }
+    const factory = getFactory()
+    const registry = await getAssetRegistry('org.catena.SupplyAgreement')
+
+    await registry.update(tx.supplyAgreement)
+
+    let event = factory.newEvent('org.catena', 'SupplyAgreementSigned')
+    event.id = tx.supplyAgreement.SAID
+    event.assetType = 'SupplyAgreement'
+    event.entity = tx.custOrDist
+    emit(event)
 }

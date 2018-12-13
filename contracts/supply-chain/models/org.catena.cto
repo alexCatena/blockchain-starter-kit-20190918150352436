@@ -46,6 +46,11 @@ asset SupplyAgreement identified by SAID {
 
   o String ciceroContractId optional
   o SupplyAgreementState agreementState default='DRAFT'
+
+  o Boolean customerSigned default=false optional
+  o Boolean distributorSigned default=false optional
+
+  
   --> Customer customer
   --> Distributor distributor
 }
@@ -108,6 +113,15 @@ transaction addCiceroContract {
 
 event CiceroContractAdded extends BaseEvent{
   o SupplyAgreementState status
+}
+
+transaction signSupplyAgreement {
+  --> SupplyAgreement supplyAgreement
+  o String custOrDist
+}
+
+event SupplyAgreementSigned extends BaseEvent{
+  o String entity
 }
 concept Site {
   o String site

@@ -360,6 +360,39 @@ describe('#' + namespace, () => {
         let sa = assets[0]
         sa.ciceroContractId.should.equal('ABCD')
     })
+    it('Can Sign supply agreement', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+
+        const transaction = factory.newTransaction(namespace, 'signSupplyAgreement')
+        transaction.custOrDist = 'Customer'
+        transaction.supplyAgreement = factory.newRelationship(namespace, 'SupplyAgreement', '1')
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            'org.catena.SupplyAgreement'
+        )
+        let assets = await assetRegistry.getAll()
+
+        let sa = assets[0]
+
+        sa.customerSigned.should.equal(true)
+
+        const transaction1 = factory.newTransaction(namespace, 'signSupplyAgreement')
+        transaction1.custOrDist = 'Distributor'
+        transaction1.supplyAgreement = factory.newRelationship(namespace, 'SupplyAgreement', '1')
+
+        await businessNetworkConnection.submitTransaction(transaction1)
+
+        assets = await assetRegistry.getAll()
+
+        sa = assets[0]
+
+        sa.distributorSigned.should.equal(true)
+
+        sa.agreementState.should.equal('ACTIVE')
+    })
     it('Can create a supply chain request', async () => {
         var NS = 'org.catena'
         await useIdentity(africoilCardName)
