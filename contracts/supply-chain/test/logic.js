@@ -529,6 +529,78 @@ describe('#' + namespace, () => {
 
         asset.requestState.should.equal('LATE')
     })
+    it('Can add Delivery Slip', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await createSupplyRequest()
+
+        const transaction = factory.newTransaction('org.catena', 'addDeliverySlip')
+        transaction.sr = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+
+        transaction.deliverySlipUrl = 'Thisisaurl'
+        transaction.deliverySlipHash = 'ABC'
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyRequest'
+        )
+
+        const assets = await assetRegistry.getAll()
+
+        const sr = assets[0]
+
+        sr.deliverySlipUrl.should.equal('Thisisaurl')
+        sr.deliverySlipHash.should.equal('ABC')
+    })
+    it('Can add QS certificate', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await createSupplyRequest()
+
+        const transaction = factory.newTransaction('org.catena', 'addQsCertificate')
+        transaction.sr = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+
+        transaction.qsCertificateUrl = 'Thisisaurl'
+        transaction.qsCertificateHash = 'ABC'
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyRequest'
+        )
+
+        const assets = await assetRegistry.getAll()
+
+        const sr = assets[0]
+
+        sr.qsCertificateUrl.should.equal('Thisisaurl')
+        sr.qsCertificateHash.should.equal('ABC')
+    })
+    it('Can add Bill of Lading', async () => {
+        await useIdentity(africoilCardName)
+        await createSupplyAgreement()
+        await createSupplyRequest()
+
+        const transaction = factory.newTransaction('org.catena', 'addBillOfLading')
+        transaction.sr = factory.newRelationship('org.catena', 'SupplyRequest', '1')
+
+        transaction.billOfLadingUrl = 'Thisisaurl'
+        transaction.billOfLadingHash = 'ABC'
+
+        await businessNetworkConnection.submitTransaction(transaction)
+
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry(
+            namespace + '.SupplyRequest'
+        )
+
+        const assets = await assetRegistry.getAll()
+
+        const sr = assets[0]
+
+        sr.billOfLadingUrl.should.equal('Thisisaurl')
+        sr.billOfLadingHash.should.equal('ABC')
+    })
     it('Can add supply agreement Documnet', async () => {
         await useIdentity(africoilCardName)
         await createSupplyAgreement()

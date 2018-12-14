@@ -235,40 +235,67 @@ async function addDistributorInvoice(tx) {
     emit(event)
 }
 
-// /**
-//  * Create Uplift Order transaction
-//  * @param {org.catena.createUpliftOrder} tx
-//  * @transaction
-//  */
-// async function createUpliftOrder(tx) {
-//     const registry = await getAssetRegistry('org.catena.UpliftOrder')
+/**
+ * Transaction to add bill of lading
+ * @param {org.catena.addBillOfLading} tx
+ * @transaction
+ */
+async function addBillOfLading(tx) {
+    var NS = 'org.catena.SupplyRequest'
 
-//     var factory = getFactory()
+    const registry = await getAssetRegistry(NS)
 
-//     var NS = 'org.catena'
+    tx.sr.billOfLadingUrl = tx.billOfLadingUrl
+    tx.sr.billOfLadingHash = tx.billOfLadingHash
 
-//     var assets = await registry.getAll()
+    await registry.update(tx.sr)
 
-//     var UOID = (assets.length + 1).toString()
+    let event = getFactory().newEvent('org.catena', 'BillOfLadingAdded')
+    event.assetType = 'SupplyRequest'
+    event.id = tx.sr.SRID
+    emit(event)
+}
+/**
+ * Transaction to add deliverySlip
+ * @param {org.catena.addDeliverySlip} tx
+ * @transaction
+ */
+async function addDeliverySlip(tx) {
+    var NS = 'org.catena.SupplyRequest'
 
-//     var uplift = factory.newResource(NS, 'UpliftOrder', UOID)
+    const registry = await getAssetRegistry(NS)
 
-//     uplift.pickupTime = tx.pickupTime
-//     uplift.mabd = tx.mabd
-//     uplift.volume = tx.volume
-//     uplift.origin = tx.origin
-//     uplift.destination = tx.destination
-//     uplift.qualitySpecification = tx.qualitySpecification
-//     uplift.fuelType = tx.fuelType
-//     uplift.transportCompany = tx.transportCompany
+    tx.sr.deliverySlipUrl = tx.deliverySlipUrl
+    tx.sr.deliverySlipHash = tx.deliverySlipHash
 
-//     uplift.supplyRequest = tx.supplyRequest
-//     uplift.distributor = tx.distributor
-//     uplift.manufacturer = tx.manufacturer
-//     uplift.transporter = tx.transporter
+    await registry.update(tx.sr)
 
-//     return registry.add(uplift)
-// }
+    let event = getFactory().newEvent('org.catena', 'DeliverySlipAdded')
+    event.assetType = 'SupplyRequest'
+    event.id = tx.sr.SRID
+    emit(event)
+}
+
+/**
+ * Transaction to add QS Certificate
+ * @param {org.catena.addQsCertificate} tx
+ * @transaction
+ */
+async function addQsCertificate(tx) {
+    var NS = 'org.catena.SupplyRequest'
+
+    const registry = await getAssetRegistry(NS)
+
+    tx.sr.qsCertificateUrl = tx.qsCertificateUrl
+    tx.sr.qsCertificateHash = tx.qsCertificateHash
+
+    await registry.update(tx.sr)
+
+    let event = getFactory().newEvent('org.catena', 'QsCertificateAdded')
+    event.assetType = 'SupplyRequest'
+    event.id = tx.sr.SRID
+    emit(event)
+}
 
 /**
  * Add location history
@@ -295,85 +322,6 @@ async function addLocationHistory(tx) {
     event.id = tx.sr.SRID
     await registry.update(tx.sr)
     emit(event)
-}
-
-/**
- * Add collection order documnet transaction
- * @param {org.catena.addCollectionOrderDocument} tx
- * @transaction
- */
-async function addCollectionOrderDocument(tx) {
-    var NS = 'org.catena.UpliftOrder'
-
-    const registry = await getAssetRegistry(NS)
-
-    tx.upliftOrder.collectionOrderDocumentHash = tx.collectionOrderDocumentHash
-    tx.upliftOrder.collectionOrderDocumentUrl = tx.collectionOrderDocumentUrl
-
-    await registry.update(tx.upliftOrder)
-}
-
-/**
- * add collection receipt document transaction
- * @param {org.catena.addCollectionReceiptDocument} tx
- * @transaction
- */
-async function addCollectionReceiptDocument(tx) {
-    var NS = 'org.catena.UpliftOrder'
-
-    const registry = await getAssetRegistry(NS)
-
-    tx.upliftOrder.collectionReceiptDocumentHash = tx.collectionReceiptDocumentHash
-    tx.upliftOrder.collectionReceiptDocumentUrl = tx.collectionReceiptDocumentUrl
-
-    await registry.update(tx.upliftOrder)
-}
-
-/**
- * add manufacturer invoice transaction
- * @param {org.catena.addManufacturerInvoice} tx
- * @transaction
- */
-async function addManufacturerInvoice(tx) {
-    var NS = 'org.catena.UpliftOrder'
-
-    const registry = await getAssetRegistry(NS)
-
-    tx.upliftOrder.manufacturerInvoiceUrl = tx.manufacturerInvoiceUrl
-    tx.upliftOrder.manufacturerInvoiceHash = tx.manufacturerInvoiceHash
-
-    await registry.update(tx.upliftOrder)
-}
-
-/**
- * add Transportation Invoice transaction
- * @param {org.catena.addTransportationInvoice} tx
- * @transaction
- */
-async function addTransportationInvoice(tx) {
-    var NS = 'org.catena.UpliftOrder'
-
-    const registry = await getAssetRegistry(NS)
-
-    tx.upliftOrder.transportationInvoiceUrl = tx.transportationInvoiceUrl
-    tx.upliftOrder.transportationInvoiceHash = tx.transportationInvoiceHash
-
-    await registry.update(tx.upliftOrder)
-}
-
-/**
- * Confirm collection date transaction
- * @param {org.catena.confirmCollectionDate} tx
- * @transaction
- */
-async function confirmCollectionDate(tx) {
-    var NS = 'org.catena.UpliftOrder'
-
-    const registry = await getAssetRegistry(NS)
-
-    tx.upliftOrder.collectionDateConfirmed = true
-
-    await registry.update(tx.upliftOrder)
 }
 
 /**
@@ -567,3 +515,117 @@ async function signSupplyAgreement(tx) {
     event.entity = tx.custOrDist
     emit(event)
 }
+
+// /**
+//  * Add collection order documnet transaction
+//  * @param {org.catena.addCollectionOrderDocument} tx
+//  * @transaction
+//  */
+// async function addCollectionOrderDocument(tx) {
+//     var NS = 'org.catena.UpliftOrder'
+
+//     const registry = await getAssetRegistry(NS)
+
+//     tx.upliftOrder.collectionOrderDocumentHash = tx.collectionOrderDocumentHash
+//     tx.upliftOrder.collectionOrderDocumentUrl = tx.collectionOrderDocumentUrl
+
+//     await registry.update(tx.upliftOrder)
+// }
+
+// /**
+//  * add collection receipt document transaction
+//  * @param {org.catena.addCollectionReceiptDocument} tx
+//  * @transaction
+//  */
+// async function addCollectionReceiptDocument(tx) {
+//     var NS = 'org.catena.UpliftOrder'
+
+//     const registry = await getAssetRegistry(NS)
+
+//     tx.upliftOrder.collectionReceiptDocumentHash = tx.collectionReceiptDocumentHash
+//     tx.upliftOrder.collectionReceiptDocumentUrl = tx.collectionReceiptDocumentUrl
+
+//     await registry.update(tx.upliftOrder)
+// }
+
+// /**
+//  * add manufacturer invoice transaction
+//  * @param {org.catena.addManufacturerInvoice} tx
+//  * @transaction
+//  */
+// async function addManufacturerInvoice(tx) {
+//     var NS = 'org.catena.UpliftOrder'
+
+//     const registry = await getAssetRegistry(NS)
+
+//     tx.upliftOrder.manufacturerInvoiceUrl = tx.manufacturerInvoiceUrl
+//     tx.upliftOrder.manufacturerInvoiceHash = tx.manufacturerInvoiceHash
+
+//     await registry.update(tx.upliftOrder)
+// }
+
+// /**
+//  * add Transportation Invoice transaction
+//  * @param {org.catena.addTransportationInvoice} tx
+//  * @transaction
+//  */
+// async function addTransportationInvoice(tx) {
+//     var NS = 'org.catena.UpliftOrder'
+
+//     const registry = await getAssetRegistry(NS)
+
+//     tx.upliftOrder.transportationInvoiceUrl = tx.transportationInvoiceUrl
+//     tx.upliftOrder.transportationInvoiceHash = tx.transportationInvoiceHash
+
+//     await registry.update(tx.upliftOrder)
+// }
+
+// /**
+//  * Confirm collection date transaction
+//  * @param {org.catena.confirmCollectionDate} tx
+//  * @transaction
+//  */
+// async function confirmCollectionDate(tx) {
+//     var NS = 'org.catena.UpliftOrder'
+
+//     const registry = await getAssetRegistry(NS)
+
+//     tx.upliftOrder.collectionDateConfirmed = true
+
+//     await registry.update(tx.upliftOrder)
+// }
+
+// /**
+//  * Create Uplift Order transaction
+//  * @param {org.catena.createUpliftOrder} tx
+//  * @transaction
+//  */
+// async function createUpliftOrder(tx) {
+//     const registry = await getAssetRegistry('org.catena.UpliftOrder')
+
+//     var factory = getFactory()
+
+//     var NS = 'org.catena'
+
+//     var assets = await registry.getAll()
+
+//     var UOID = (assets.length + 1).toString()
+
+//     var uplift = factory.newResource(NS, 'UpliftOrder', UOID)
+
+//     uplift.pickupTime = tx.pickupTime
+//     uplift.mabd = tx.mabd
+//     uplift.volume = tx.volume
+//     uplift.origin = tx.origin
+//     uplift.destination = tx.destination
+//     uplift.qualitySpecification = tx.qualitySpecification
+//     uplift.fuelType = tx.fuelType
+//     uplift.transportCompany = tx.transportCompany
+
+//     uplift.supplyRequest = tx.supplyRequest
+//     uplift.distributor = tx.distributor
+//     uplift.manufacturer = tx.manufacturer
+//     uplift.transporter = tx.transporter
+
+//     return registry.add(uplift)
+// }

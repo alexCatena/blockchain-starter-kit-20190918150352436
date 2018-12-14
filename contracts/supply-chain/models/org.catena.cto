@@ -175,6 +175,15 @@ asset SupplyRequest identified by SRID {
   o String meterSlipUrl optional
   o String meterSlipHash optional
 
+  o String billOfLadingUrl optional
+  o String billOfLadingHash optional
+
+  o String deliverySlipUrl optional
+  o String deliverySlipHash optional
+
+  o String qsCertificateUrl optional
+  o String qsCertificateHash optional
+
   --> SupplyAgreement supplyAgreement
   --> Customer customer
   --> Distributor distributor
@@ -221,7 +230,6 @@ transaction checkDelivery {
 }
 
 event CheckDelivery extends BaseEvent {
-
 }
 concept DeliveryRequest {
   o String $class default='org.catena.DeliveryRequest'
@@ -284,6 +292,31 @@ transaction addMeterSlip {
   o String meterSlipUrl
 }
 
+transaction addBillOfLading {
+  --> SupplyRequest sr
+  o String billOfLadingUrl
+  o String billOfLadingHash
+}
+
+event BillOfLadingAdded extends BaseEvent {
+}
+
+transaction addDeliverySlip {
+  --> SupplyRequest sr
+  o String deliverySlipUrl
+  o String deliverySlipHash
+}
+event DeliverySlipAdded extends BaseEvent {
+}
+
+transaction addQsCertificate {
+  --> SupplyRequest sr
+  o String qsCertificateHash
+  o String qsCertificateUrl
+}
+
+event QsCertificateAdded extends BaseEvent{
+}
 asset UpliftOrder identified by UOID {
   o String UOID
   o DateTime pickupTime
