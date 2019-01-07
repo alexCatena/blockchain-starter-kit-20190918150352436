@@ -522,9 +522,9 @@ async function signSupplyAgreement(tx) {
  * @transaction
  */
 async function getSATransactions(tx) {
-    const reg1 = await getAssetRegistry('org.catena.addSupplyAgreementDocument')
-    const reg2 = await getAssetRegistry('org.catena.addSupplyRequest')
-    const reg3 = await getAssetRegistry('org.catena.addCiceroContract')
+    const reg1 = await getTransactionRegistry('org.catena.addSupplyAgreementDocument')
+    const reg2 = await getTransactionRegistry('org.catena.addSupplyRequest')
+    const reg3 = await getTransactionRegistry('org.catena.addCiceroContract')
 
     let res1 = await reg1.resolveAll()
     let res2 = await reg2.resolveAll()
@@ -551,9 +551,9 @@ async function getSATransactions(tx) {
  * @transaction
  */
 async function getSRTransactions(tx) {
-    const reg1 = await getAssetRegistry('org.catena.addLocationHistory')
-    const reg2 = await getAssetRegistry('org.catena.addDistributorInvoice')
-    const reg3 = await getAssetRegistry('org.catena.deliveryCompleted')
+    const reg1 = await getTransactionRegistry('org.catena.addLocationHistory')
+    const reg2 = await getTransactionRegistry('org.catena.addDistributorInvoice')
+    const reg3 = await getTransactionRegistry('org.catena.deliveryCompleted')
 
     let res1 = await reg1.resolveAll()
     let res2 = await reg2.resolveAll()
