@@ -13,6 +13,7 @@ globals:
   getParticipantRegistry: true
   getNativeAPI: true
   getCurrentParticipant: true
+  getTransactionRegistry: true
   post: true
   emit: true
 rules:
