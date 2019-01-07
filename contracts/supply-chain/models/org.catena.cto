@@ -442,3 +442,15 @@ transaction getAssetHistory {
   o String assetId
   o String assetType
 }
+
+@commit(false)
+@returns(String)
+transaction getSATransactions {
+  o String SAID
+}
+
+@commit(false)
+@retuns(String)
+transaction getSRTransactions {
+  o String SRID
+}

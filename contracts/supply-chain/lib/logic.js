@@ -516,6 +516,64 @@ async function signSupplyAgreement(tx) {
     emit(event)
 }
 
+/**
+ * Return history of transactions related to supply agreements
+ * @param {org.catena.getSATransactions} tx
+ * @transaction
+ */
+async function getSATransactions(tx) {
+    const reg1 = await getAssetRegistry('org.catena.addSupplyAgreementDocument')
+    const reg2 = await getAssetRegistry('org.catena.addSupplyRequest')
+    const reg3 = await getAssetRegistry('org.catena.addCiceroContract')
+
+    let res1 = await reg1.resolveAll()
+    let res2 = await reg2.resolveAll()
+    let res3 = await reg3.resolveAll()
+
+    res1 = res1.filter(a => a.supplyAgreement.SAID === tx.SAID)
+    res2 = res2.filter(a => a.supplyAgreement.SAID === tx.SAID)
+    res3 = res3.filter(a => a.supplyAgreement.SAID === tx.SAID)
+
+    let result = [...res1, ...res2, ...res3]
+
+    let res = {}
+    res.message = 'Success'
+    res.data = result
+
+    let retString = JSON.stringify(res)
+
+    return retString
+}
+
+/**
+ * Return history of transactions related to supply request
+ * @param {org.catena.getSRTransactions} tx
+ * @transaction
+ */
+async function getSRTransactions(tx) {
+    const reg1 = await getAssetRegistry('org.catena.addLocationHistory')
+    const reg2 = await getAssetRegistry('org.catena.addDistributorInvoice')
+    const reg3 = await getAssetRegistry('org.catena.deliveryCompleted')
+
+    let res1 = await reg1.resolveAll()
+    let res2 = await reg2.resolveAll()
+    let res3 = await reg3.resolveAll()
+
+    res1 = res1.filter(a => a.sr.SRID === tx.SRID)
+    res2 = res2.filter(a => a.sr.SRID === tx.SRID)
+    res3 = res3.filter(a => a.sr.SRID === tx.SRID)
+
+    let result = [...res1, ...res2, ...res3]
+
+    let res = {}
+    res.message = 'Success'
+    res.data = result
+
+    let retString = JSON.stringify(res)
+
+    return retString
+}
+
 // /**
 //  * Add collection order documnet transaction
 //  * @param {org.catena.addCollectionOrderDocument} tx
