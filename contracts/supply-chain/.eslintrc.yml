@@ -13,9 +13,10 @@ globals:
   getParticipantRegistry: true
   getNativeAPI: true
   getCurrentParticipant: true
-  getTransactionRegistry: true
   post: true
   emit: true
+  query: true
+  buildQuery: true
 rules:
   indent:
     - error

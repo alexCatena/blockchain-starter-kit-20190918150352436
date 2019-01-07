@@ -522,17 +522,17 @@ async function signSupplyAgreement(tx) {
  * @transaction
  */
 async function getSATransactions(tx) {
-    const reg1 = await getTransactionRegistry('org.catena.addSupplyAgreementDocument')
-    const reg2 = await getTransactionRegistry('org.catena.addSupplyRequest')
-    const reg3 = await getTransactionRegistry('org.catena.addCiceroContract')
+    let q1 = buildQuery(
+        'SELECT org.catena.addSupplyAgreementDocument WHERE (supplyAgreement.SRID == _$SAID)'
+    )
+    let q2 = buildQuery('SELECT org.catena.addSupplyRequest WHERE (supplyAgreement.SRID == _$SAID)')
+    let q3 = buildQuery(
+        'SELECT org.catena.addCiceroContract WHERE (supplyAgreement.SRID == _$SAID)'
+    )
 
-    let res1 = await reg1.resolveAll()
-    let res2 = await reg2.resolveAll()
-    let res3 = await reg3.resolveAll()
-
-    res1 = res1.filter(a => a.supplyAgreement.SAID === tx.SAID)
-    res2 = res2.filter(a => a.supplyAgreement.SAID === tx.SAID)
-    res3 = res3.filter(a => a.supplyAgreement.SAID === tx.SAID)
+    let res1 = await query(q1, { SAID: tx.SAID })
+    let res2 = await query(q2, { SAID: tx.SAID })
+    let res3 = await query(q3, { SAID: tx.SAID })
 
     let result = [...res1, ...res2, ...res3]
 
@@ -551,17 +551,13 @@ async function getSATransactions(tx) {
  * @transaction
  */
 async function getSRTransactions(tx) {
-    const reg1 = await getTransactionRegistry('org.catena.addLocationHistory')
-    const reg2 = await getTransactionRegistry('org.catena.addDistributorInvoice')
-    const reg3 = await getTransactionRegistry('org.catena.deliveryCompleted')
+    let q1 = buildQuery('SELECT org.catena.addLocationHistory WHERE (sr.SRID == _$SRID)')
+    let q2 = buildQuery('SELECT org.catena.addDistributorInvoice WHERE (sr.SRID == _$SRID)')
+    let q3 = buildQuery('SELECT org.catena.deliveryCompleted WHERE (sr.SRID == _$SRID)')
 
-    let res1 = await reg1.resolveAll()
-    let res2 = await reg2.resolveAll()
-    let res3 = await reg3.resolveAll()
-
-    res1 = res1.filter(a => a.sr.SRID === tx.SRID)
-    res2 = res2.filter(a => a.sr.SRID === tx.SRID)
-    res3 = res3.filter(a => a.sr.SRID === tx.SRID)
+    let res1 = await query(q1, { SRID: tx.SRID })
+    let res2 = await query(q2, { SRID: tx.SRID })
+    let res3 = await query(q3, { SRID: tx.SRID })
 
     let result = [...res1, ...res2, ...res3]
 
