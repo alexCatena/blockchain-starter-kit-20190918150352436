@@ -523,11 +523,11 @@ async function signSupplyAgreement(tx) {
  */
 async function getSATransactions(tx) {
     let q1 = buildQuery(
-        'SELECT org.catena.addSupplyAgreementDocument WHERE (supplyAgreement.SRID == _$SAID)'
+        'SELECT org.catena.addSupplyAgreementDocument WHERE (supplyAgreement.SAID == _$SAID)'
     )
-    let q2 = buildQuery('SELECT org.catena.addSupplyRequest WHERE (supplyAgreement.SRID == _$SAID)')
+    let q2 = buildQuery('SELECT org.catena.addSupplyRequest WHERE (supplyAgreement.SAID == _$SAID)')
     let q3 = buildQuery(
-        'SELECT org.catena.addCiceroContract WHERE (supplyAgreement.SRID == _$SAID)'
+        'SELECT org.catena.addCiceroContract WHERE (supplyAgreement.SAID == _$SAID)'
     )
 
     let res1 = await query(q1, { SAID: tx.SAID })
