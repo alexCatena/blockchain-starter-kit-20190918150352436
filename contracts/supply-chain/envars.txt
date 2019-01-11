@@ -1,0 +1,14 @@
+COMPOSER_CARD=restadmin@supply-chain
+COMPOSER_NAMESPACES=never
+COMPOSER_AUTHENTICATION=true
+COMPOSER_MULTIUSER=true
+COMPOSER_PROVIDERS='{
+      "jwt": {
+    "provider": "jwt",
+    "module": "/home/composer/node_modules/custom-jwt.js",
+    "secretOrKey": "superdupersecret",
+    "authScheme": "saml",
+    "successRedirect": "http://localhost:3001?loggedIn=true",
+    "failureRedirect":"http://localhost:3001?loggedIn=failed"
+    }
+}'

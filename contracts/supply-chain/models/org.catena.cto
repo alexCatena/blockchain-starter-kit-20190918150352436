@@ -450,7 +450,7 @@ transaction getSATransactions {
 }
 
 @commit(false)
-@retuns(String)
+@returns(String)
 transaction getSRTransactions {
   o String SRID
 }

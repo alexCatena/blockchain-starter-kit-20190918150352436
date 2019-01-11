@@ -184,7 +184,6 @@ function deploy_composer_rest_server {
     cf set-env ${CF_APP_NAME} COMPOSER_WEBSOCKETS true
     popd
 }
-
 function deploy_apps {
     for APP in ${APPS}
     do

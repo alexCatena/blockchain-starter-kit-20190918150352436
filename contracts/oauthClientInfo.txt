@@ -1,0 +1,17 @@
+clientID:275728464351-jsi1o3qp89g5v63bstefcn85vr4ci2i9.apps.googleusercontent.com
+secret:0_u__V8Ky-wrMvEdI6APzfRr
+
+
+COMPOSER_PROVIDERS='{
+    "google": {
+        "provider": "google",
+        "module": "passport-google-oauth2",
+        "clientID": "275728464351-jsi1o3qp89g5v63bstefcn85vr4ci2i9.apps.googleusercontent.com",
+        "clientSecret": "0_u__V8Ky-wrMvEdI6APzfRr",
+        "authPath": "/auth/google",
+        "callbackURL": "/auth/google/callback",
+        "scope": "https://www.googleapis.com/auth/plus.login",
+        "successRedirect": "/",
+        "failureRedirect": "/"
+    }
+}'
